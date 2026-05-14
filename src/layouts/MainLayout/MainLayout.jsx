@@ -1,16 +1,13 @@
-import { Outlet } from "react-router-dom";
+import React from 'react';
+import Navbar from '../../components/shared/navbar/Navbar';
+import { Outlet } from 'react-router-dom';
 
 const MainLayout = () => {
   return (
-    <div className="font-sans">
-      {/* Sticky Navbar */}
+    <div>
+      <Navbar></Navbar>
+      <Outlet></Outlet>
       
-      {/* Dynamic Content */}
-      <main className="min-h-[calc(100vh-300px)]">
-        <Outlet />
-      </main>
-      
-      {/* Footer */}
     </div>
   );
 };
