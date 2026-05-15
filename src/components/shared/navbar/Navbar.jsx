@@ -3,8 +3,10 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LayoutDashboard, User, LogOut } from "lucide-react";
 import Logo from "../Logo/Logo";
+import useAuth from "../../../hooks/useAuth";
 
 const Navbar = () => {
+  const {user, logOut} = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -17,15 +19,11 @@ const Navbar = () => {
   }, []);
 
   // Auth-based navigation simulation
-  const [user, setUser] = useState({
-    name: "MD. Moniruzzaman (Rumman)",
-    photo: "https://i.ibb.co/5GzXyXy/user.png",
-    role: "student" 
-  });
 
   const handleLogout = () => {
-    setUser(null);
-    navigate("/");
+
+    return logOut()
+    
   };
 
   // Navigation links
