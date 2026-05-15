@@ -3,17 +3,25 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { UserCircle, GraduationCap, Mail, Lock, User, ArrowRight } from "lucide-react";
+import useAxios from "../../../hooks/useAxios";
+import useAuth from "../../../hooks/useAuth";
 
 const Register = () => {
+    const {createUser, setUser} = useAuth();
   const [role, setRole] = useState("student");
   
   // React Hook Form initialization
   const { register, handleSubmit, formState: { errors } } = useForm();
+//   const useAxiosSecure = useAxios();
 
   const onSubmit = (data) => {
     const finalData = { ...data, role };
     console.log("Registration Data:", finalData);
     // integrate your backend API here
+    createUser(data.email, data.password)
+    .then(res=> console.log(res)).catch(err=>{
+        console.log(err)
+    })
   };
 
   return (

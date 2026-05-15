@@ -6,7 +6,7 @@ import Logo from "../Logo/Logo";
 import useAuth from "../../../hooks/useAuth";
 
 const Navbar = () => {
-  const {user, logOut} = useAuth();
+  const {user, logOut: signOut} = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
 
-    return logOut()
+    return signOut()
     
   };
 
