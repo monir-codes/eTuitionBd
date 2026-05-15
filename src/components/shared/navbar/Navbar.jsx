@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, LayoutDashboard, User, LogOut } from "lucide-react";
+import Logo from "../Logo/Logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,13 +48,7 @@ const Navbar = () => {
         
         {/* Requirement: Display Logo & Website Name */}
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative w-9 h-9">
-            <div className="absolute inset-0 border-[4px] border-slate-200 rounded-full"></div>
-            <div className="absolute inset-0 border-[4px] border-primary rounded-full border-t-transparent -rotate-45 group-hover:rotate-45 transition-transform duration-500"></div>
-          </div>
-          <span className="text-2xl font-bold tracking-tight text-slate-800">
-            eTuition<span className="text-primary">al</span>
-          </span>
+          <Logo></Logo>
         </Link>
 
         {/* Desktop Navigation */}
