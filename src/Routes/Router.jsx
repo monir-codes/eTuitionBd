@@ -5,6 +5,9 @@ import Tuitions from "../pages/Tuitions/Tuitions";
 import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
 import Tutors from "../pages/Tutors/Tutors";
 import TutorProfile from "../pages/TutorProfile/TutorProfile";
+import AuthLayout from "../layouts/AuthLayout/AuthLayout";
+import Login from "../pages/Auth/Login/Login";
+import Register from "../pages/Auth/Register/Register";
 
 export const router = createBrowserRouter([
     {
@@ -30,6 +33,20 @@ export const router = createBrowserRouter([
             {
                 path: `/tutor/:id`,
                 element: <TutorProfile></TutorProfile>
+            }
+        ]
+    },
+    {
+        path: '/',
+        Component: AuthLayout,
+        children: [
+            {
+                index: true,
+                Component: Login
+            },
+            {
+                path: '/register',
+                Component: Register,
             }
         ]
     }
