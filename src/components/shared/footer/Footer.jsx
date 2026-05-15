@@ -63,7 +63,7 @@ const Footer = () => {
             </li>
             <li className="flex items-center gap-3">
               <FaRegEnvelope className="text-[#40bfff] shrink-0" size={16} />
-              <span>support@etuitional.com</span>
+              <span>support@etuitionBD.com</span>
             </li>
             <li className="flex items-center gap-3">
               <FaPhoneAlt className="text-[#40bfff] shrink-0" size={16} />
