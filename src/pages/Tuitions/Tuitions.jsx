@@ -128,7 +128,7 @@ const Tuitions = () => {
                     <span>{post.salary}</span>
                   </div>
                   <Link 
-                    to={`/tuitions/${post.id}`} 
+                    to={`/tuitions/details/${post.id}`} 
                     className="p-3 bg-[#40bfff] text-white rounded-xl shadow-lg shadow-blue-100 hover:scale-110 transition-transform"
                   >
                     <ArrowRight size={20} />
