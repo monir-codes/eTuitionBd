@@ -1,5 +1,6 @@
 import { FaFacebook, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhoneAlt, FaRegEnvelope, FaTwitter } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import Logo from "../Logo/Logo";
 // Using a single reliable import source from react-icons/fa
 
 
@@ -18,13 +19,7 @@ const Footer = () => {
         {/* Section 1: About Platform */}
         <div className="space-y-6">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8">
-              <div className="absolute inset-0 border-[3px] border-slate-200 rounded-full"></div>
-              <div className="absolute inset-0 border-[3px] border-[#40bfff] rounded-full border-t-transparent -rotate-45 transition-transform duration-500 group-hover:rotate-45"></div>
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-800">
-              eTuition<span className="text-[#40bfff]">al</span>
-            </span>
+        <Logo></Logo>
           </Link>
           <p className="text-slate-500 font-medium leading-relaxed max-w-xs text-[15px]">
             eTuitional is a premium tuition management platform bridging the gap between expert tutors and students with automated security.
