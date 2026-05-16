@@ -105,7 +105,7 @@ const LatestTuitions = () => {
               <Link to={`/tuition/${job.id}`} className="block w-full">
                 <button className="w-full py-4 rounded-2xl bg-slate-900 text-white font-black hover:bg-[#40bfff] shadow-lg hover:shadow-blue-200 transition-all active:scale-95">
                   View Details
-                </button>a
+                </button>
               </Link>
             </motion.div>
           ))}

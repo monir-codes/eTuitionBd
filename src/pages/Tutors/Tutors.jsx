@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, Star, Book, CheckCircle, Filter, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Tutors = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
 
   // Mock Data: Following your requirement for dynamic fetch (Backend ready structure)
   const tutors = [

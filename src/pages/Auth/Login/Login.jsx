@@ -1,15 +1,31 @@
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight } from "lucide-react";
+import useAuth from "../../../hooks/useAuth";
+import { toast } from "react-toastify";
 
 const Login = () => {
+    const {signIn, setUser} = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log("Login Data:", data);
-    // axios.post('/api/login', data)...
-  };
+ const onSubmit = (data) => {
+  signIn(data.email, data.password)
+    .then((result) => {
+      const loggedUser = result?.user || result; 
+      setUser(loggedUser);
+      
+      // 🎉 সাকসেস নোটিফিকেশন
+      toast.success(`Welcome back, ${loggedUser?.displayName || "User"}!`);
+      navigate(location?.pathname, { replace: true });
+    })
+    .catch((err) => {
+      // ⚠️ এরর নোটিফিকেশন
+      toast.error(err?.message || "Invalid Email or Password!");
+    });
+};
 
   return (
     <div style={{ fontFamily: "'League Spartan', sans-serif" }} className="min-h-screen bg-[#f8fafc] pt-28 pb-20 flex items-center justify-center px-6">

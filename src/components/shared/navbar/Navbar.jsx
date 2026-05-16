@@ -73,7 +73,7 @@ const Navbar = () => {
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar border-2 border-primary/20 p-0.5">
                 <div className="w-10 rounded-full">
-                  <img src={user.photo} alt="profile" />
+                  <img src={user?.photoURL} alt="profile" />
                 </div>
               </label>
               <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-3 shadow-2xl bg-white rounded-xl w-60 border border-slate-50">
@@ -116,8 +116,10 @@ const Navbar = () => {
                 <Link key={link.name} to={link.path} onClick={() => setIsOpen(false)}>{link.name}</Link>
               ))}
               <div className="h-[1px] bg-slate-100 my-2" />
-              {user ? (
+              {user ? (<>
                 <Link to="/dashboard" onClick={() => setIsOpen(false)} className="btn btn-primary text-white">Dashboard</Link>
+                <button onClick={handleLogout} className="btn btn-primary text-white">Logout</button>
+                </>
               ) : (
                 <Link to="/register" onClick={() => setIsOpen(false)} className="btn btn-primary text-white">Get Started</Link>
               )}

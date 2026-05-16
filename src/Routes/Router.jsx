@@ -8,6 +8,9 @@ import TutorProfile from "../pages/TutorProfile/TutorProfile";
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import Login from "../pages/Auth/Login/Login";
 import Register from "../pages/Auth/Register/Register";
+import PrivateRoute from "./PrivateRoute";
+import About from "../pages/About/About";
+import Contact from "../pages/Contact/Contact";
 
 export const router = createBrowserRouter([
     {
@@ -32,7 +35,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: `/tutor/:id`,
-                element: <TutorProfile></TutorProfile>
+                element: <PrivateRoute><TutorProfile></TutorProfile></PrivateRoute>
+            },
+            {
+                path: '/about',
+                Component: About,
+            },
+            {
+                path: '/contact',
+                Component: Contact,
             }
         ]
     },
