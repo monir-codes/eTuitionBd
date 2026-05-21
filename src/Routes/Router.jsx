@@ -11,6 +11,8 @@ import Register from "../pages/Auth/Register/Register";
 import PrivateRoute from "./PrivateRoute";
 import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
+import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
+import TutorHome from "../pages/Dashboard/Tutor/TutorHome";
 
 export const router = createBrowserRouter([
     {
@@ -59,6 +61,21 @@ export const router = createBrowserRouter([
             {
                 path: '/register',
                 Component: Register,
+            }
+        ]
+    },
+    {
+        path: '/dashboard',
+        element: <PrivateRoute>
+            <DashboardLayout></DashboardLayout>
+        </PrivateRoute>,
+        children: [
+            {
+                path: 'tutor-home',
+                element: <PrivateRoute>
+                    <TutorHome></TutorHome>
+                </PrivateRoute>
+
             }
         ]
     }

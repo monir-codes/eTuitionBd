@@ -1,75 +1,159 @@
-import { Outlet, Link, NavLink } from "react-router-dom";
-import { FaHome, FaUser, FaBook, FaPlusCircle, FaHistory, FaUsers, FaThList } from "react-icons/fa";
+import { useState } from "react";
+import { Outlet, Link, NavLink, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  User, GraduationCap, LayoutDashboard, FileText, 
+  Briefcase, CheckSquare, Users, Settings, LogOut, Menu, X 
+} from "lucide-react";
+import useAuth from "../../hooks/useAuth";
 
 const DashboardLayout = () => {
-  // এই রোলটি আমরা পরবর্তীতে Context বা JWT থেকে পাবো (Admin/Student/Tutor)
-  const role = "student"; 
+  const { user, logOut } = useAuth();
+  const navigate = useNavigate();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // 👑 টেস্ট করার জন্য একটি ডিফল্ট রোল (তোমার ব্যাকএন্ড/ফায়ারবেস থেকে user.role আসবে)
+  const role = user?.role || "tutor"; 
+
+  const handleLogout = () => {
+    logOut().then(() => {
+      navigate("/login");
+    });
+  };
+
+  // 📋 রোল অনুযায়ী সাইডবার মেনু কনফিগারেশন
+  const menuConfig = {
+    admin: [
+      { path: "admin", label: "Overview", icon: <LayoutDashboard size={20} /> },
+      { path: "manage-tutors", label: "Verify Tutors", icon: <GraduationCap size={20} /> },
+      { path: "manage-users", label: "Manage Users", icon: <Users size={20} /> },
+    ],
+    tutor: [
+      { path: "tutor", label: "Tutor Profile", icon: <User size={20} /> },
+      { path: "applied-jobs", label: "Applied Jobs", icon: <Briefcase size={20} /> },
+    ],
+    student: [
+      { path: "student", label: "Student Home", icon: <LayoutDashboard size={20} /> },
+      { path: "post-tuition", label: "Post a Tuition", icon: <FileText size={20} /> },
+      { path: "my-posts", label: "My Tuition Posts", icon: <CheckSquare size={20} /> },
+    ]
+  };
+
+  const currentMenu = menuConfig[role] || [];
 
   return (
-    <div className="drawer lg:drawer-open font-sans">
-      <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
-      
-      <div className="drawer-content flex flex-col bg-slate-50">
-        {/* Dashboard Top Navbar (Mobile only toggle) */}
-        <div className="w-full navbar bg-white shadow-sm lg:hidden">
-          <div className="flex-none">
-            <label htmlFor="dashboard-drawer" className="btn btn-square btn-ghost">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-6 h-6 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </label>
-          </div>
-          <div className="flex-1 px-2 mx-2 font-bold text-primary italic text-xl">eTuitionBd</div>
-        </div>
-
-        {/* Page Content */}
-        <div className="p-6 md:p-10">
-          <Outlet />
-        </div>
-      </div> 
-
-      {/* Sidebar Content */}
-      <div className="drawer-side">
-        <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
-        <ul className="menu p-4 w-80 min-h-full bg-white text-base-content border-r">
-          {/* Logo Section */}
-          <div className="mb-10 px-4 py-2">
-            <Link to="/" className="text-2xl font-bold text-primary italic">eTuitionBd</Link>
-            <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">{role} Dashboard</p>
-          </div>
-
-          {/* Student Routes */}
-          {role === 'student' && (
-            <>
-              <li><NavLink to="/dashboard/my-tuitions"><FaBook /> My Tuitions</NavLink></li>
-              <li><NavLink to="/dashboard/post-tuition"><FaPlusCircle /> Post New Tuition</NavLink></li>
-              <li><NavLink to="/dashboard/applied-tutors"><FaUsers /> Applied Tutors</NavLink></li>
-              <li><NavLink to="/dashboard/payments"><FaHistory /> Payments</NavLink></li>
-            </>
-          )}
-
-          {/* Tutor Routes */}
-          {role === 'tutor' && (
-            <>
-              <li><NavLink to="/dashboard/my-applications"><FaHistory /> My Applications</NavLink></li>
-              <li><NavLink to="/dashboard/ongoing-tuitions"><FaBook /> Ongoing Tuitions</NavLink></li>
-              <li><NavLink to="/dashboard/revenue"><FaHistory /> Revenue History</NavLink></li>
-            </>
-          )}
-
-          {/* Admin Routes */}
-          {role === 'admin' && (
-            <>
-              <li><NavLink to="/dashboard/manage-users"><FaUsers /> User Management</NavLink></li>
-              <li><NavLink to="/dashboard/manage-tuitions"><FaThList /> Tuition Management</NavLink></li>
-              <li><NavLink to="/dashboard/reports"><FaHistory /> Reports & Analytics</NavLink></li>
-            </>
-          )}
-
-          {/* Shared Routes */}
-          <div className="divider my-4"></div>
-          <li><NavLink to="/dashboard/profile"><FaUser /> Profile Settings</NavLink></li>
-          <li><NavLink to="/"><FaHome /> Back to Home</NavLink></li>
-        </ul>
+    <div 
+      style={{ fontFamily: "'League Spartan', sans-serif" }} 
+      className="min-h-screen bg-[#f8fafc] flex"
+    >
+      {/* 📱 Mobile Menu Toggle Button */}
+      <div className="lg:hidden fixed top-6 right-6 z-50">
+        <button 
+          onClick={() => setIsMobileOpen(!isMobileOpen)}
+          className="p-3 bg-slate-950 text-white rounded-2xl shadow-xl"
+        >
+          {isMobileOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* 💻 Desktop Sidebar */}
+      <aside className="w-80 bg-slate-950 text-slate-400 p-8 flex flex-col justify-between hidden lg:flex fixed h-screen z-30">
+        <div className="space-y-12 w-full">
+          {/* Logo Branding */}
+          <Link to="/" className="text-2xl font-black tracking-tighter text-white block pl-4">
+            eTuition<span className="text-[#40bfff]">BD</span>
+          </Link>
+
+          {/* Nav Links */}
+          <nav className="space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 pl-4 mb-4">
+              {role} Dashboard
+            </p>
+            {currentMenu.map((item, idx) => (
+              <NavLink
+                key={idx}
+                to={item.path}
+                className={({ isActive }) => 
+                  `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${
+                    isActive 
+                      ? "bg-[#40bfff] text-white shadow-lg shadow-blue-500/20" 
+                      : "hover:bg-slate-900 hover:text-white"
+                  }`
+                }
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+
+        {/* Footer actions */}
+        <div className="border-t border-slate-900 pt-6 w-full space-y-4">
+          <div className="flex items-center gap-3 pl-4 mb-4">
+            <img 
+              src={user?.photoURL || "https://i.pravatar.cc/100"} 
+              className="w-10 h-10 rounded-xl object-cover bg-slate-800" 
+              alt="Avatar" 
+            />
+            <div className="leading-tight">
+              <h4 className="text-white font-black text-sm max-w-[160px] truncate">{user?.displayName || "User Name"}</h4>
+              <p className="text-xs text-slate-500 font-bold capitalize">{role}</p>
+            </div>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-4 px-5 h-14 w-full rounded-2xl font-black text-rose-400 hover:bg-rose-500/10 transition-all"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* 📱 Mobile Sidebar Slide-over Panel */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.aside 
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="fixed inset-y-0 left-0 w-72 bg-slate-950 text-slate-400 p-8 flex flex-col justify-between z-40 lg:hidden shadow-2xl"
+          >
+            <div className="space-y-12">
+              <span className="text-2xl font-black tracking-tighter text-white block pl-4">eTuitionBD</span>
+              <nav className="space-y-2">
+                {currentMenu.map((item, idx) => (
+                  <NavLink
+                    key={idx}
+                    to={item.path}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${
+                        isActive ? "bg-[#40bfff] text-white" : "hover:bg-slate-900 hover:text-white"
+                      }`
+                    }
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+            <button onClick={handleLogout} className="flex items-center gap-4 px-5 h-14 w-full rounded-2xl font-black text-rose-400 hover:bg-rose-500/10 transition-all">
+              <LogOut size={20} /> <span>Logout</span>
+            </button>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
+      {/* 🖥️ Main Dynamic Content View Area */}
+      <main className="flex-grow lg:pl-80 min-h-screen">
+        <div className="p-6 md:p-12 max-w-6xl mx-auto">
+          <Outlet /> {/* রোল অনুযায়ী সুনির্দিষ্ট পেজগুলো এখানে রেন্ডার হবে */}
+        </div>
+      </main>
     </div>
   );
 };

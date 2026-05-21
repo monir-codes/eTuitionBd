@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 
 const Logo = () => {
   return (
-    <Link 
-      to="/" 
+    <div 
       className={`flex items-center gap-2.5 group select-none`}
       style={{ fontFamily: "'League Spartan', sans-serif" }}
     >
@@ -23,7 +22,7 @@ const Logo = () => {
       <span className="text-2xl sm:text-3xl font-black tracking-tighter text-slate-800 leading-none">
         eTuition<span className="text-[#40bfff]">BD</span>
       </span>
-    </Link>
+    </div>
   );
 };
 
