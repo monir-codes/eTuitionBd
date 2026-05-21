@@ -48,6 +48,7 @@ const TutorHome = () => {
 
       console.log("Saving to MongoDB:", updatedTutorData);
       // await axios.put(`http://localhost:5000/api/tutors/${user.email}`, updatedTutorData);
+      
 
       setUser({ ...user, displayName: data.fullName, photoURL: uploadedImageUrl });
 
