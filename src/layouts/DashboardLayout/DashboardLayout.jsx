@@ -30,7 +30,7 @@ const DashboardLayout = () => {
     ],
     tutor: [
       { path: "tutor", label: "Tutor Profile", icon: <User size={20} /> },
-      { path: "applied-jobs", label: "Applied Jobs", icon: <Briefcase size={20} /> },
+      { path: "tutor/applied-jobs", label: "Applied Jobs", icon: <Briefcase size={20} /> },
     ],
     student: [
       { path: "student", label: "Student Home", icon: <LayoutDashboard size={20} /> },

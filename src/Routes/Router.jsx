@@ -13,6 +13,7 @@ import About from "../pages/About/About";
 import Contact from "../pages/Contact/Contact";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import TutorHome from "../pages/Dashboard/Tutor/TutorHome";
+import AppliedJobs from "../pages/Dashboard/Tutor/AppliedJobs";
 
 export const router = createBrowserRouter([
     {
@@ -71,12 +72,18 @@ export const router = createBrowserRouter([
         </PrivateRoute>,
         children: [
             {
-                path: 'tutor-home',
+                path: 'tutor',
                 element: <PrivateRoute>
                     <TutorHome></TutorHome>
                 </PrivateRoute>
 
-            }
+            },
+            {
+                path: 'tutor/applied-jobs',
+                element: <PrivateRoute>
+                    <AppliedJobs></AppliedJobs>
+                </PrivateRoute>
+            },
         ]
     }
 
