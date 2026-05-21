@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LayoutDashboard, User, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, LogOut } from "lucide-react";
 import Logo from "../Logo/Logo";
 import useAuth from "../../../hooks/useAuth";
 
@@ -78,8 +78,8 @@ const Navbar = () => {
               </label>
               <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-3 shadow-2xl bg-white rounded-xl w-60 border border-slate-50">
                 <div className="px-4 py-2 mb-2 bg-slate-50 rounded-lg">
-                  <p className="font-bold text-slate-800 truncate text-sm">{user.name}</p>
-                  <p className="text-[10px] font-black uppercase text-primary tracking-widest">{user.role}</p>
+                  <p className="font-bold text-slate-800 truncate text-sm">{user?.name}</p>
+                  <p className="text-[10px] font-black uppercase text-primary tracking-widest">{user?.role}</p>
                 </div>
                 <li><Link className="py-2 font-bold flex gap-2" to="/dashboard"><LayoutDashboard size={16}/> Dashboard</Link></li>
                 <div className="h-[1px] bg-slate-100 my-1" />

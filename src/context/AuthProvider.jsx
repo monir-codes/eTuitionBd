@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AuthContext from './AuthContext';
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateCurrentUser, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase/firebase.init';
 
 const AuthProvider = ({children}) => {
@@ -23,6 +23,16 @@ const AuthProvider = ({children}) => {
         ).catch(err=> 
             console.log(err)
         )
+     };
+
+     const updateUserProfile = (name, url)=>{
+        return updateProfile(auth.currentUser,{
+        displayName: name, photoURL: url
+        }).then(()=>{
+            console.log('Profile successfully updated')
+        }).catch((err)=>{
+            console.log(err)
+        })
      }
 
      useEffect(()=>{
@@ -42,6 +52,7 @@ const AuthProvider = ({children}) => {
         loading,
         setLoading,
         createUser,
+        updateUserProfile,
         signIn,
         logOut,
 

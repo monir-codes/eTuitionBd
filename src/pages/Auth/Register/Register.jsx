@@ -1,27 +1,86 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { UserCircle, GraduationCap, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { UserCircle, GraduationCap, Mail, Lock, User, ArrowRight, Image } from "lucide-react";
 import useAxios from "../../../hooks/useAxios";
 import useAuth from "../../../hooks/useAuth";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Register = () => {
-    const {createUser, setUser} = useAuth();
-  const [role, setRole] = useState("student");
-  
-  // React Hook Form initialization
-  const { register, handleSubmit, formState: { errors } } = useForm();
-//   const useAxiosSecure = useAxios();
+  const { createUser, updateUserProfile, setUser } = useAuth(); // আপনার Authপ্রোভাইডারের হুকস
+  const {handleSubmit, register, formState: { errors }} = useForm()
+  const [role, setRole] = useState();
+  const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    const finalData = { ...data, role };
-    console.log("Registration Data:", finalData);
-    // integrate your backend API here
-    createUser(data.email, data.password)
-    .then(res=> console.log(res)).catch(err=>{
-        console.log(err)
-    })
+  const onSubmit = async (data) => {
+    // লোডিং নোটিফিকেশন শুরু
+    const toastId = toast.loading("Creating your account... Please wait.");
+
+    try {
+      // 📸 ১. ইমেজ ফাইল চেক এবং ImgBB তে আপলোড
+      if (!data.photo || data.photo.length === 0) {
+        throw new Error("Please select a profile photo!");
+      }
+
+      const imageFile = data.photo[0];
+      const formData = new FormData(); // ফিক্সড: ক্যাপিটাল F
+      formData.append("image", imageFile);
+
+      const imageBBKey = import.meta.env.VITE_IMG_API;
+      const imageApi = `https://api.imgbb.com/1/upload?key=${imageBBKey}`;
+
+      // ফিক্সড: এখানে await দিতেই হবে
+      const imageRes = await axios.post(imageApi, formData);
+      
+      if (!imageRes.data.success) {
+        throw new Error("Image upload failed! Try another image.");
+      }
+
+      const uploadedImageUrl = imageRes.data.data.url; // অরিজিনাল ইমেজ সিডিএন লিংক
+
+      // 🔐 ২. ফায়ারবেসে ইউজার ক্রিয়েট করা
+      const result = await createUser(data.email, data.password);
+      const newUser = result.user;
+
+      // 👤 ৩. ইউজারের নাম এবং ছবির লিংক দিয়ে প্রোফাইল আপডেট
+      await updateUserProfile(data.fullName, uploadedImageUrl);
+
+      // 💾 ৪. ডাটাবেজ বা স্টেট আপডেট (আপনার রিকোয়ারমেন্ট অনুযায়ী রোল সহ)
+      const finalUserData = {
+        ...newUser,
+        displayName: data.fullName,
+        photoURL: uploadedImageUrl,
+        role: role // আপনার সিলেক্ট করা স্টুডেন্ট/টিউটর রোল
+      };
+
+      // আপনার MongoDB ব্যাকএন্ডে ইউজার ডাটা পাঠাতে চাইলে এখানে axios.post করবেন
+      // await axios.post('http://localhost:5000/api/users', { name: data.fullName, email: data.email, role, image: uploadedImageUrl });
+
+      setUser(finalUserData);
+
+      // 🎉 সাকসেস মেসেজ এবং রিডাইরেক্ট
+      toast.update(toastId, { 
+        render: `Welcome to eTuitionBD, ${data.fullName}!`, 
+        type: "success", 
+        isLoading: false, 
+        autoClose: 3000 
+      });
+
+      navigate("/"); // হোম পেজে নিয়ে যাওয়া হলো
+
+    } catch (err) {
+      console.error("Registration Error:", err);
+      
+      // ⚠️ এরর মেসেজ টোস্ট আকারে শো করানো
+      toast.update(toastId, { 
+        render: err.message || "Registration failed! Please try again.", 
+        type: "error", 
+        isLoading: false, 
+        autoClose: 3000 
+      });
+    }
   };
 
   return (
@@ -89,6 +148,18 @@ const Register = () => {
                 />
               </div>
               {errors.password && <p className="text-red-500 text-xs mt-1 ml-2 font-bold">{errors.password.message}</p>}
+            </div>
+            {/* Photo */}
+            <div>
+              <div className="relative">
+                <Image className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <input 
+                  {...register("photo", { required: "photo is required"})}
+                  type="file" placeholder="Password" 
+                  className={' file-input w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 outline-none transition-all'} 
+                />
+              </div>
+              {errors.photo && <p className="text-red-500 text-xs mt-1 ml-2 font-bold">{errors.photo.message}</p>}
             </div>
 
             <button type="submit" className="w-full bg-[#40bfff] text-white h-14 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-[#3498db] transition-all flex items-center justify-center gap-2 group">
