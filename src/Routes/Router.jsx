@@ -14,6 +14,8 @@ import Contact from "../pages/Contact/Contact";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import TutorHome from "../pages/Dashboard/Tutor/TutorHome";
 import AppliedJobs from "../pages/Dashboard/Tutor/AppliedJobs";
+import PostTuition from "../pages/Dashboard/Students/PostTuition";
+import DashboardIndex from "../pages/Dashboard/DashboardIndex/DashboardIndex";
 
 export const router = createBrowserRouter([
     {
@@ -72,17 +74,30 @@ export const router = createBrowserRouter([
         </PrivateRoute>,
         children: [
             {
+                index: true,
+                element: <DashboardIndex></DashboardIndex>
+            },
+
+            // Tutors Dashboard 
+            {
                 path: 'tutor',
-                element: <PrivateRoute>
-                    <TutorHome></TutorHome>
-                </PrivateRoute>
+                element: <TutorHome></TutorHome>
+                
 
             },
             {
                 path: 'tutor/applied-jobs',
-                element: <PrivateRoute>
-                    <AppliedJobs></AppliedJobs>
-                </PrivateRoute>
+                element: <AppliedJobs></AppliedJobs>
+            },
+
+            // Students Dashboard 
+            {
+                path: 'student/post-tuition',
+                element: <PostTuition></PostTuition>
+            },
+            {
+                path: 'student/my-posts',
+                element: <PostTuition></PostTuition>
             },
         ]
     }
