@@ -22,6 +22,7 @@ import ManageTutors from "../pages/Dashboard/Admin/ManageTutors";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import PaymentHistory from "../pages/PaymentHistory/PaymentHistory";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
+import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 
 export const router = createBrowserRouter([
     {
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
                 path: 'admin/manage-tutors',
                 element: <ManageTutors></ManageTutors>
             },
+            {
+                path: 'admin/manage-users',
+                element: <ManageUsers></ManageUsers>
+            }
         ]
     },
     {
