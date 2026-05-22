@@ -138,7 +138,6 @@ const DashboardLayout = () => {
           </nav>
         </div>
 
-        {/* Footer User Profile Card */}
         {/* Footer User Profile Card & Actions */}
         <div className="border-t border-slate-900 pt-6 w-full space-y-2">
           {/* 👤 User Info Display */}
