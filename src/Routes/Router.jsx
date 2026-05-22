@@ -16,6 +16,11 @@ import TutorHome from "../pages/Dashboard/Tutor/TutorHome";
 import AppliedJobs from "../pages/Dashboard/Tutor/AppliedJobs";
 import PostTuition from "../pages/Dashboard/Students/PostTuition";
 import DashboardIndex from "../pages/Dashboard/DashboardIndex/DashboardIndex";
+import MyPosts from "../pages/Dashboard/Students/MyPosts";
+import AdminHome from "../pages/Dashboard/Admin/AdminHome";
+import ManageTutors from "../pages/Dashboard/Admin/ManageTutors";
+import ErrorPage from "../pages/ErrorPage/ErrorPage";
+import PaymentHistory from "../pages/PaymentHistory/PaymentHistory";
 
 export const router = createBrowserRouter([
     {
@@ -82,12 +87,14 @@ export const router = createBrowserRouter([
             {
                 path: 'tutor',
                 element: <TutorHome></TutorHome>
-                
-
             },
             {
                 path: 'tutor/applied-jobs',
                 element: <AppliedJobs></AppliedJobs>
+            },
+            {
+                path: 'tutor/payment-history',
+                element: <PaymentHistory></PaymentHistory>
             },
 
             // Students Dashboard 
@@ -97,9 +104,27 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'student/my-posts',
-                element: <PostTuition></PostTuition>
+                element: <MyPosts></MyPosts>
+            },
+            {
+                path: 'student/payment-history',
+                element: <PaymentHistory></PaymentHistory>
+            },
+
+            // Admin Dashboard 
+            {
+                path: 'admin',
+                element: <AdminHome></AdminHome>
+            },
+            {
+                path: 'admin/manage-tutors',
+                element: <ManageTutors></ManageTutors>
             },
         ]
+    },
+    {
+        path: '*',
+        element: <ErrorPage></ErrorPage>
     }
 
 ])
