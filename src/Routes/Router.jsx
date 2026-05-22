@@ -25,127 +25,136 @@ import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
+import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
-    {
-        path: "/",
-        Component: MainLayout,
-        children: [
-            {
-                index: true, 
-                Component: Home,
-            },
-            {
-                path: '/tuitions',
-                Component: Tuitions,
-            },
-            {
-                path: `/tuitions/details/:id`,
-                element: <TuitionDetails></TuitionDetails>
-            },
-            {
-                path: '/tutors',
-                element: <Tutors></Tutors>
-            },
-            {
-                path: `/tutor/:id`,
-                element: <PrivateRoute><TutorProfile></TutorProfile></PrivateRoute>
-            },
-            {
-                path: '/about',
-                Component: About,
-            },
-            {
-                path: '/contact',
-                Component: Contact,
-            },
- 
-        ]
-    },
-    {
-        path: '/',
-        Component: AuthLayout,
-        children: [
-            {
-                index: true,
-                path: '/login',
-                Component: Login
-            },
-            {
-                path: '/register',
-                Component: Register,
-            }
-        ]
-    },
-    {
-        path: '/dashboard',
-        element: <PrivateRoute>
-            <DashboardLayout></DashboardLayout>
-        </PrivateRoute>,
-        children: [
-            {
-                index: true,
-                element: <DashboardIndex></DashboardIndex>
-            },
-            {
-                path: 'profile-settings',
-                element: <ProfileSettings></ProfileSettings>
-            },
+  {
+    path: "/",
+    Component: MainLayout,
+    children: [
+      {
+        index: true,
+        Component: Home,
+      },
+      {
+        path: "/tuitions",
+        Component: Tuitions,
+      },
+      {
+        path: `/tuitions/details/:id`,
+        element: <TuitionDetails></TuitionDetails>,
+      },
+      {
+        path: "tuitions/:id",
+        element: <SingleTuitionDetails></SingleTuitionDetails>,
+      },
+      {
+        path: "/tutors",
+        element: <Tutors></Tutors>,
+      },
+      {
+        path: `/tutor/:id`,
+        element: (
+          <PrivateRoute>
+            <TutorProfile></TutorProfile>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/about",
+        Component: About,
+      },
+      {
+        path: "/contact",
+        Component: Contact,
+      },
+    ],
+  },
+  {
+    path: "/",
+    Component: AuthLayout,
+    children: [
+      {
+        index: true,
+        path: "/login",
+        Component: Login,
+      },
+      {
+        path: "/register",
+        Component: Register,
+      },
+    ],
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <DashboardLayout></DashboardLayout>
+      </PrivateRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <DashboardIndex></DashboardIndex>,
+      },
+      {
+        path: "profile-settings",
+        element: <ProfileSettings></ProfileSettings>,
+      },
 
-            // Tutors Dashboard 
-            {
-                path: 'tutor',
-                element: <TutorHome></TutorHome>
-            },
-            {
-                path: 'tutor/applied-jobs',
-                element: <AppliedJobs></AppliedJobs>
-            },
-            {
-                path: 'tutor/payment-history',
-                element: <PaymentHistory></PaymentHistory>
-            },
+      // Tutors Dashboard
+      {
+        path: "tutor",
+        element: <TutorHome></TutorHome>,
+      },
+      {
+        path: "tutor/applied-jobs",
+        element: <AppliedJobs></AppliedJobs>,
+      },
+      {
+        path: "tutor/payment-history",
+        element: <PaymentHistory></PaymentHistory>,
+      },
 
-            // Students Dashboard 
-            {
-                path: 'student/post-tuition',
-                element: <PostTuition></PostTuition>
-            },
-            {
-                path: 'student/my-posts',
-                element: <MyPosts></MyPosts>
-            },
-            {
-                path: 'student/applicants/:id',
-                element: <ViewApplicants></ViewApplicants>
-            },
-            {
-                path: 'student/payment-history',
-                element: <PaymentHistory></PaymentHistory>
-            },
+      // Students Dashboard
+      {
+        path: "student/post-tuition",
+        element: <PostTuition></PostTuition>,
+      },
+      {
+        path: "student/my-posts",
+        element: <MyPosts></MyPosts>,
+      },
+      {
+        path: "student/applicants/:id",
+        element: <ViewApplicants></ViewApplicants>,
+      },
+      {
+        path: "student/payment-history",
+        element: <PaymentHistory></PaymentHistory>,
+      },
 
-            // Admin Dashboard 
-            {
-                path: 'admin',
-                element: <AdminHome></AdminHome>
-            },
-            {
-                path: 'admin/manage-tutors',
-                element: <ManageTutors></ManageTutors>
-            },
-            {
-                path: 'admin/manage-users',
-                element: <ManageUsers></ManageUsers>
-            },
-            {
-                path: 'admin/manage-tuitions',
-                element: <ManageTuitions></ManageTuitions>
-            }
-        ]
-    },
-    {
-        path: '*',
-        element: <ErrorPage></ErrorPage>
-    }
-
-])
+      // Admin Dashboard
+      {
+        path: "admin",
+        element: <AdminHome></AdminHome>,
+      },
+      {
+        path: "admin/manage-tutors",
+        element: <ManageTutors></ManageTutors>,
+      },
+      {
+        path: "admin/manage-users",
+        element: <ManageUsers></ManageUsers>,
+      },
+      {
+        path: "admin/manage-tuitions",
+        element: <ManageTuitions></ManageTuitions>,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <ErrorPage></ErrorPage>,
+  },
+]);
