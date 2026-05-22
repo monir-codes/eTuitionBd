@@ -60,7 +60,7 @@ const MyPosts = () => {
             </div>
 
             <div className="flex items-center gap-3 w-full lg:w-auto border-t lg:border-none pt-4 lg:pt-0">
-              <Link to={`/dashboard/applicants/${post._id}`} className="flex-grow lg:flex-grow-0 flex items-center justify-center gap-2 h-12 px-6 bg-slate-900 text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all">
+              <Link to={`/dashboard/student/applicants/${post._id}`} className="flex-grow lg:flex-grow-0 flex items-center justify-center gap-2 h-12 px-6 bg-slate-900 text-white rounded-xl font-black text-xs hover:bg-slate-800 transition-all">
                 View Applicants <ExternalLink size={14} />
               </Link>
               <button className="h-12 w-12 flex items-center justify-center bg-rose-50 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all shadow-sm">

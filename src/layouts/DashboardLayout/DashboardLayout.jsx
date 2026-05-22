@@ -32,7 +32,7 @@ const DashboardLayout = () => {
 
   // 🚀 ২. সরাসরি লগইন করা ইউজারের রিয়েল-টাইম রোল ডিটেকশন
   // তোমার ডাটাবেজ/ফায়ারবেস অবজেক্টের রেসপন্স অনুযায়ী user?.role চেক হবে
-  const role = user?.role || "admin";
+  const role = user?.role || "student";
 
   const handleLogout = () => {
     logOut().then(() => {
@@ -78,7 +78,7 @@ const DashboardLayout = () => {
         icon: <CreditCard size={20} />,
       },
       {
-        path: "dashboard/profile-settings",
+        path: "profile-settings",
         label: "Settings",
         icon: <Settings size={20} />,
       },
@@ -100,7 +100,7 @@ const DashboardLayout = () => {
         icon: <CreditCard size={20} />,
       },
       {
-        path: "dashboard/profile-settings",
+        path: "profile-settings",
         label: "Settings",
         icon: <Settings size={20} />,
       },

@@ -24,6 +24,7 @@ import PaymentHistory from "../pages/PaymentHistory/PaymentHistory";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
+import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
 
 export const router = createBrowserRouter([
     {
@@ -113,6 +114,10 @@ export const router = createBrowserRouter([
             {
                 path: 'student/my-posts',
                 element: <MyPosts></MyPosts>
+            },
+            {
+                path: 'student/applicants/:id',
+                element: <ViewApplicants></ViewApplicants>
             },
             {
                 path: 'student/payment-history',
