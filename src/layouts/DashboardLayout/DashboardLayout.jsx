@@ -19,6 +19,7 @@ const DashboardLayout = () => {
     return <Loading />;
   }
 
+  
   // 🚀 ২. সরাসরি লগইন করা ইউজারের রিয়েল-টাইম রোল ডিটেকশন
   // তোমার ডাটাবেজ/ফায়ারবেস অবজেক্টের রেসপন্স অনুযায়ী user?.role চেক হবে
   const role = user?.role || "student"; 
