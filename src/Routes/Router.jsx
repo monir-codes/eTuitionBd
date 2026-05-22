@@ -21,6 +21,7 @@ import AdminHome from "../pages/Dashboard/Admin/AdminHome";
 import ManageTutors from "../pages/Dashboard/Admin/ManageTutors";
 import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import PaymentHistory from "../pages/PaymentHistory/PaymentHistory";
+import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 
 export const router = createBrowserRouter([
     {
@@ -54,7 +55,8 @@ export const router = createBrowserRouter([
             {
                 path: '/contact',
                 Component: Contact,
-            }
+            },
+ 
         ]
     },
     {
@@ -81,6 +83,10 @@ export const router = createBrowserRouter([
             {
                 index: true,
                 element: <DashboardIndex></DashboardIndex>
+            },
+            {
+                path: 'profile-settings',
+                element: <ProfileSettings></ProfileSettings>
             },
 
             // Tutors Dashboard 
