@@ -23,6 +23,7 @@ import ErrorPage from "../pages/ErrorPage/ErrorPage";
 import PaymentHistory from "../pages/PaymentHistory/PaymentHistory";
 import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
+import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 
 export const router = createBrowserRouter([
     {
@@ -130,6 +131,10 @@ export const router = createBrowserRouter([
             {
                 path: 'admin/manage-users',
                 element: <ManageUsers></ManageUsers>
+            },
+            {
+                path: 'admin/manage-tuitions',
+                element: <ManageTuitions></ManageTuitions>
             }
         ]
     },

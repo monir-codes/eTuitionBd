@@ -14,6 +14,8 @@ import {
   X,
   CreditCard,
   Settings,
+  BookCheck,
+  CircleUserRound,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import Loading from "../../pages/Loading/Loading";
@@ -30,7 +32,7 @@ const DashboardLayout = () => {
 
   // 🚀 ২. সরাসরি লগইন করা ইউজারের রিয়েল-টাইম রোল ডিটেকশন
   // তোমার ডাটাবেজ/ফায়ারবেস অবজেক্টের রেসপন্স অনুযায়ী user?.role চেক হবে
-  const role = user?.role || "student";
+  const role = user?.role || "admin";
 
   const handleLogout = () => {
     logOut().then(() => {
@@ -41,14 +43,24 @@ const DashboardLayout = () => {
   // 📋 ৩. রোল অনুযায়ী পারফেক্টলি ম্যাপ করা সাইডবার মেনু
   const menuConfig = {
     admin: [
-      { path: "admin", label: "Overview", icon: <LayoutDashboard size={20} /> },
+      { path: "dashboard/admin", label: "Overview", icon: <LayoutDashboard size={20} /> },
       {
-        path: "manage-tutors",
-        label: "Verify Tutors",
+        path: "admin/manage-tutors",
+        label: "Manage Tutors",
         icon: <GraduationCap size={20} />,
       },
       {
-        path: "dashboard/profile-settings",
+        path: "admin/manage-tuitions",
+        label: "Manage Tuitions",
+        icon: <BookCheck size={20} />,
+      },
+      {
+        path: "admin/manage-users",
+        label: "Manage Users",
+        icon: <CircleUserRound size={20} />,
+      },
+      {
+        path: "profile-settings",
         label: "Settings",
         icon: <Settings size={20} />,
       },
