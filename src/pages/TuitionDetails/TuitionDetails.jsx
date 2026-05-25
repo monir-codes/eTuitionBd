@@ -6,7 +6,7 @@ import {
   MapPin, CircleDollarSign, Clock, BookOpen, Calendar, 
   User, CheckCircle2, ArrowLeft, Info, Loader2, AlertTriangle, Send 
 } from "lucide-react";
-import useAxios from "../../hooks/useAxios"; // আপনার কাস্টম এক্সিওস হুক
+import useAxios from "../../hooks/useAxios";
 import useAuth from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 
@@ -14,22 +14,29 @@ const TuitionDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const axiosPublic = useAxios();
+  const axiosSecure = useAxios();
   const [proposalText, setProposalText] = useState("");
 
-  // 🔄 ১. TanStack Query দিয়ে ডাইনামিকালি সিঙ্গেল টিউশন ফেচ করা
   const { data: job = {}, isLoading, isError, error } = useQuery({
     queryKey: ["tuition-details", id],
     queryFn: async () => {
-      const res = await axiosPublic.get(`/api/tuitions/${id}`);
+      const res = await axiosSecure.get(`/api/tuition/${id}`);
       return res.data;
+    }
+  });
+
+  const { data: role = {}} = useQuery({
+    queryKey: ["role", user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/api/user?email=${user?.email}`);
+      return res.data.role;
     }
   });
 
   // 🚀 ২. useMutation দিয়ে টিউটরের অ্যাপ্লিকেশন ডাটাবেজে পোস্ট করা
   const applyMutation = useMutation({
     mutationFn: async (applicationPayload) => {
-      const res = await axiosPublic.post("/api/tuitions/apply", applicationPayload);
+      const res = await axiosSecure.post("/api/tuitions/apply", applicationPayload);
       return res.data;
     },
     onSuccess: () => {
@@ -45,12 +52,12 @@ const TuitionDetails = () => {
   const handleApplySubmit = (e) => {
     e.preventDefault();
 
-    if (!user) {
+    if (!role) {
       toast.warn("Please log in as a Tutor to apply!");
       return navigate("/login", { state: { from: { pathname: `/tuitions/${id}` } } });
     }
 
-    if (user?.role !== "tutor") {
+    if (role !== "tutor") {
       return toast.error("Access Denied! Only Tutors can apply for postings.");
     }
 

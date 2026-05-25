@@ -18,6 +18,7 @@ import {
 import useAuth from "../../../hooks/useAuth";
 import axios from "axios";
 import { toast } from "react-toastify";
+import useAxios from "../../../hooks/useAxios";
 
 const Register = () => {
   const { createUser, updateUserProfile, setUser } = useAuth();
@@ -28,68 +29,84 @@ const Register = () => {
   } = useForm();
   const [role, setRole] = useState("student"); // ডিফল্ট সিলেক্টেড রোল
   const navigate = useNavigate();
+  const axiosSecure = useAxios();
 
-  const onSubmit = async (data) => {
-    const toastId = toast.loading("Creating your account... Please wait.");
+ const onSubmit = async (data) => {
+  const toastId = toast.loading("Creating your account... Please wait.");
 
-    try {
-      if (!data.photo || data.photo.length === 0) {
-        throw new Error("Please select a profile photo!");
-      }
-
-      const imageFile = data.photo[0];
-      const formData = new FormData();
-      formData.append("image", imageFile);
-
-      const imageBBKey = import.meta.env.VITE_IMG_API;
-      const imageApi = `https://api.imgbb.com/1/upload?key=${imageBBKey}`;
-
-      const imageRes = await axios.post(imageApi, formData);
-
-      if (!imageRes.data.success) {
-        throw new Error("Image upload failed! Try another image.");
-      }
-
-      const uploadedImageUrl = imageRes.data.data.url;
-
-      // 🔐 ফায়ারবেসে ইউজার ক্রিয়েট করা
-      const result = await createUser(data.email, data.password);
-      const newUser = result.user;
-
-      // 👤 ইউজারের নাম এবং ছবির লিংক দিয়ে প্রোফাইল আপডেট
-      await updateUserProfile(data.fullName, uploadedImageUrl);
-
-      // 💾 ডাটাবেজ বা স্টেট আপডেট রোল সহ
-      const finalUserData = {
-        ...newUser,
-        displayName: data.fullName,
-        photoURL: uploadedImageUrl,
-        role: role,
-      };
-
-      // এখানে আপনার MongoDB ব্যাকএন্ডে ইউজার ডাটা পাঠাতে পারেন:
-      // await axios.post('http://localhost:5000/api/users', { name: data.fullName, email: data.email, role, phone: data.phone, image: uploadedImageUrl });
-
-      setUser(finalUserData);
-
-      toast.update(toastId, {
-        render: `Welcome to eTuitionBD, ${data.fullName}!`,
-        type: "success",
-        isLoading: false,
-        autoClose: 3000,
-      });
-
-      navigate("/dashboard"); // সরাসরি ড্যাশবোর্ডে পাঠানোই বেস্ট প্র্যাকটিস
-    } catch (err) {
-      console.error("Registration Error:", err);
-      toast.update(toastId, {
-        render: err.message || "Registration failed! Please try again.",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
+  try {
+    if (!data.photo || data.photo.length === 0) {
+      throw new Error("Please select a profile photo!");
     }
-  };
+
+    const imageFile = data.photo[0];
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    const imageBBKey = import.meta.env.VITE_IMG_API;
+    const imageApi = `https://api.imgbb.com/1/upload?key=${imageBBKey}`;
+
+    const imageRes = await axios.post(imageApi, formData);
+
+    if (!imageRes.data.success) {
+      throw new Error("Image upload failed! Try another image.");
+    }
+
+    const uploadedImageUrl = imageRes.data.data.url;
+
+    // 🔐 ফায়ারবেসে ইউজার ক্রিয়েট করা
+    const result = await createUser(data.email, data.password);
+    const newUser = result.user;
+
+    // 👤 ইউজারের নাম এবং ছবির লিংক দিয়ে প্রোফাইল আপডেট
+    await updateUserProfile(data.fullName, uploadedImageUrl);
+
+    // 💾 ডাটাবেজের জন্য পেলোড অবজেক্ট তৈরি
+    const backendUserData = { 
+      name: data.fullName, 
+      email: data.email, 
+      role: role, // আপনার সিলেক্টেড স্টেট থেকে আসছে
+      phone: data.phone, 
+      image: uploadedImageUrl 
+    };
+
+    // 🚀 ফিক্সড ব্যাকএন্ড পোস্ট লজিক: .then/.catch বাদ দিয়ে সরাসরি await ব্যবহার
+    // নোট: রেজিস্ট্রেশন পেজে axiosSecure এর বদলে axiosPublic (সাধারণ axios) ব্যবহার করা সেফ, যদি JWT প্রটেকশন থাকে।
+    const serverRes = await axiosSecure.post('/api/users', backendUserData);
+    console.log("Server Response:", serverRes.data);
+
+    // ফায়ারবেস ও ডাটাবেজ সাকসেস হলে গ্লোবাল স্টেট সেট করা
+    const finalUserData = {
+      ...newUser,
+      displayName: data.fullName,
+      photoURL: uploadedImageUrl,
+      role: role,
+    };
+    setUser(finalUserData);
+
+    toast.update(toastId, {
+      render: `Welcome to eTuitionBD, ${data.fullName}!`,
+      type: "success",
+      isLoading: false,
+      autoClose: 3000,
+    });
+
+    navigate("/dashboard"); 
+
+  } catch (err) {
+    console.error("Registration Error Details:", err);
+    
+    // ব্যাকএন্ড থেকে আসা স্পেসিফিক এরর মেসেজ থাকলে তা টোস্টে দেখাবে (যেমন: User already exists)
+    const errorMessage = err?.response?.data?.message || err.message || "Registration failed! Please try again.";
+    
+    toast.update(toastId, {
+      render: errorMessage,
+      type: "error",
+      isLoading: false,
+      autoClose: 3000,
+    });
+  }
+};
 
   return (
     <div

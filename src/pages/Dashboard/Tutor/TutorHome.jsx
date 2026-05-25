@@ -5,11 +5,13 @@ import { User, GraduationCap, BookOpen, Clock, Camera, Save } from "lucide-react
 import { toast } from "react-toastify";
 import axios from "axios";
 import useAuth from "../../../hooks/useAuth";
+import useAxios from "../../../hooks/useAxios";
 
 const TutorHome = () => {
   const { user, updateUserProfile, setUser } = useAuth();
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
+  const axiosSecure = useAxios();
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -47,7 +49,7 @@ const TutorHome = () => {
       };
 
       console.log("Saving to MongoDB:", updatedTutorData);
-      // await axios.put(`http://localhost:5000/api/tutors/${user.email}`, updatedTutorData);
+      await axiosSecure.patch(`/api/user?email=${user.email}`, updatedTutorData);
       
 
       setUser({ ...user, displayName: data.fullName, photoURL: uploadedImageUrl });
@@ -114,7 +116,7 @@ const TutorHome = () => {
               <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wider">Institute / University</label>
               <div className="relative">
                 <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                <input {...register("institute", { required: "Institute is required" })} placeholder="e.g. BUET / Dhaka University" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
+                <input {...register("institute", { required: "Institute is required" })} defaultValue={user?.institute || ""} placeholder="e.g. BUET / Dhaka University" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
               </div>
             </div>
           </div>
@@ -124,7 +126,7 @@ const TutorHome = () => {
               <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wider">Expertise Subjects</label>
               <div className="relative">
                 <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                <input {...register("subject", { required: "Subject is required" })} placeholder="e.g. Physics, Math" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
+                <input {...register("subject", { required: "Subject is required" })} defaultValue={user?.subject || ""} placeholder="e.g. Physics, Math" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
               </div>
             </div>
 
@@ -132,14 +134,14 @@ const TutorHome = () => {
               <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wider">Teaching Experience</label>
               <div className="relative">
                 <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                <input {...register("experience", { required: "Experience is required" })} placeholder="e.g. 3 Years" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
+                <input {...register("experience", { required: "Experience is required" })} defaultValue={user?.experience || ""} placeholder="e.g. 3 Years" type="text" className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" />
               </div>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wider">About / Bio</label>
-            <textarea {...register("bio")} rows="4" placeholder="Write a short bio about your teaching style..." className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all resize-none"></textarea>
+            <textarea {...register("bio")} defaultValue={user?.bio || ""} rows="4" placeholder="Write a short bio about your teaching style..." className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all resize-none"></textarea>
           </div>
 
           <button type="submit" disabled={loading} className="w-full sm:w-auto bg-[#40bfff] text-white h-14 px-8 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:bg-[#3498db] transition-all flex items-center justify-center gap-2">

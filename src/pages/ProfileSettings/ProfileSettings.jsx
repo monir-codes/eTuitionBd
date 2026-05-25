@@ -4,16 +4,25 @@ import { useState } from "react";
 import { User, Mail, Phone, Lock, Eye, EyeOff, Save, Shield } from "lucide-react";
 import { toast } from "react-toastify";
 import useAuth from "../../hooks/useAuth";
-// import axios from "axios"; // ব্যাকএন্ড কানেকশনের জন্য
+import useAxios from "../../hooks/useAxios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const ProfileSettings = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
   const [loading, setLoading] = useState(false);
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
+  const axiosSecure = useAxios();
 
   const role = user?.role || "student";
+
+    const profileUpdate = useMutation({
+        mutationFn: async(updatedData)=>{
+          await axiosSecure.patch(`/api/user?email=${user?.email}`, updatedData)
+          .then(res => console.log(res.data));
+        }
+      })
 
   const onUpdateProfile = async (data) => {
     setLoading(true);
@@ -24,9 +33,12 @@ const ProfileSettings = () => {
         name: data.fullName,
         phone: data.phone,
       };
+
+      profileUpdate.mutate(updatedInfo)
+      updateUserProfile(data.fullName, user?.photoURL || "");
+
+    
       
-      console.log("Updating Personal Info:", updatedInfo);
-      // await axios.patch(`http://localhost:5000/api/users/${user.email}`, updatedInfo);
       
       toast.update(toastId, { 
         render: "Profile details updated successfully!", 
@@ -158,7 +170,7 @@ const ProfileSettings = () => {
                   {...register("currentPassword")} 
                   type={showCurrentPass ? "text" : "password"} 
                   placeholder="••••••••" 
-                  className="w-full pl-12 pr-12 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" 
+                  className="w-full pl-12 pr-12 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" disabled
                 />
                 <button type="button" onClick={() => setShowCurrentPass(!showCurrentPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   {showCurrentPass ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -175,9 +187,9 @@ const ProfileSettings = () => {
                   {...register("newPassword", { minLength: { value: 6, message: "Password must be at least 6 characters" } })} 
                   type={showNewPass ? "text" : "password"} 
                   placeholder="••••••••" 
-                  className="w-full pl-12 pr-12 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" 
+                  className="w-full pl-12 pr-12 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all" disabled
                 />
-                <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" disabled>
                   {showNewPass ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>

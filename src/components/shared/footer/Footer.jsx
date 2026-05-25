@@ -1,4 +1,6 @@
 import { FaFacebook, FaInstagram, FaLinkedinIn, FaMapMarkerAlt, FaPhoneAlt, FaRegEnvelope, FaTwitter } from "react-icons/fa";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { Link } from "react-router-dom";
 import Logo from "../Logo/Logo";
 // Using a single reliable import source from react-icons/fa
@@ -31,7 +33,7 @@ const Footer = () => {
               <FaFacebook size={18} />
             </a>
             <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
-              <FaTwitter size={18} />
+              <FontAwesomeIcon icon={faXTwitter} size="lg" />
             </a>
             <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
               <FaLinkedinIn size={18} />

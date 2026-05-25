@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useState } from "react";
 import { FaChrome } from "react-icons/fa";
+import useAxios from "../../../hooks/useAxios";
 
 const Login = () => {
   const { signIn, googleSignIn, setUser } = useAuth();
@@ -14,13 +15,14 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const axiosSecure = useAxios();
 
   const from = location?.state?.from?.pathname || "/dashboard";
 
   // 🤝 সেশন এবং রোল মার্জিং লজিক
   const handleUserSession = async (firebaseUser, toastId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/users/${firebaseUser.email}`);
+      const response = await axiosSecure.get(`/api/users/${firebaseUser.email}`);
       const dbUser = response.data;
 
       const finalUserData = {

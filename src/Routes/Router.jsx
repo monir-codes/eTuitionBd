@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout/MainLayout";
 import Home from "../pages/Home/Home";
 import Tuitions from "../pages/Tuitions/Tuitions";
-import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
 import Tutors from "../pages/Tutors/Tutors";
 import TutorProfile from "../pages/TutorProfile/TutorProfile";
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
@@ -25,7 +24,8 @@ import ProfileSettings from "../pages/ProfileSettings/ProfileSettings";
 import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
-import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
+import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
+// import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
   {
@@ -41,12 +41,8 @@ export const router = createBrowserRouter([
         Component: Tuitions,
       },
       {
-        path: `/tuitions/details/:id`,
-        element: <TuitionDetails></TuitionDetails>,
-      },
-      {
         path: "tuitions/:id",
-        element: <SingleTuitionDetails></SingleTuitionDetails>,
+        element: <TuitionDetails></TuitionDetails>,
       },
       {
         path: "/tutors",

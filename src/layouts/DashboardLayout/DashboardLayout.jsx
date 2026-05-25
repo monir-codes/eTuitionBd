@@ -8,7 +8,6 @@ import {
   FileText,
   Briefcase,
   CheckSquare,
-  Users,
   LogOut,
   Menu,
   X,
@@ -19,20 +18,33 @@ import {
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import Loading from "../../pages/Loading/Loading";
+import { useQuery } from "@tanstack/react-query";
+import useAxios from "../../hooks/useAxios";
 
 const DashboardLayout = () => {
   const { user, loading, logOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const axiosSecure = useAxios();
 
-  // 🚨 ১. অথেনটিকেশন বা রোল লোড হওয়া পর্যন্ত লেআউট হোল্ড করে রাখবে
+  // 🚨 ১. অথেনটিকেশন বা রোল লোড হওয়া পর্যন্ত লেআউট হোল্ড করে রাখবে
   if (loading) {
     return <Loading />;
   }
 
-  // 🚀 ২. সরাসরি লগইন করা ইউজারের রিয়েল-টাইম রোল ডিটেকশন
-  // তোমার ডাটাবেজ/ফায়ারবেস অবজেক্টের রেসপন্স অনুযায়ী user?.role চেক হবে
-  const role = user?.role || "student";
+  // 🚀 ২. রিয়েল-টাইম রোল ডিটেকশন (admin, tutor, student)
+  const {data: role = []} = useQuery({
+    queryKey: ["role", user?.email],
+    queryFn: async()=>{
+      const res = await axiosSecure.get(`/api/user?email=${user?.email}`)
+      return res.data.role
+    }
+  })
+
+  if (!role) {
+    return <Loading />; 
+  }
+
 
   const handleLogout = () => {
     logOut().then(() => {
@@ -40,10 +52,14 @@ const DashboardLayout = () => {
     });
   };
 
-  // 📋 ৩. রোল অনুযায়ী পারফেক্টলি ম্যাপ করা সাইডবার মেনু
+  // 📋 ৩. ফিক্সড রাউটিং পাথ (চাইল্ড রাউটের নিয়ম অনুযায়ী প্রিফিক্স ও স্ল্যাশ মুক্ত)
   const menuConfig = {
     admin: [
-      { path: "dashboard/admin", label: "Overview", icon: <LayoutDashboard size={20} /> },
+      {
+        path: "admin",
+        label: "Overview",
+        icon: <LayoutDashboard size={20} />,
+      },
       {
         path: "admin/manage-tutors",
         label: "Manage Tutors",
@@ -59,14 +75,13 @@ const DashboardLayout = () => {
         label: "Manage Users",
         icon: <CircleUserRound size={20} />,
       },
-      {
-        path: "profile-settings",
-        label: "Settings",
-        icon: <Settings size={20} />,
-      },
     ],
     tutor: [
-      { path: "tutor", label: "Tutor Profile", icon: <User size={20} /> },
+      {
+        path: "tutor",
+        label: "Tutor Profile",
+        icon: <User size={20} />,
+      },
       {
         path: "tutor/applied-jobs",
         label: "Applied Jobs",
@@ -76,11 +91,6 @@ const DashboardLayout = () => {
         path: "tutor/payment-history",
         label: "Payment History",
         icon: <CreditCard size={20} />,
-      },
-      {
-        path: "profile-settings",
-        label: "Settings",
-        icon: <Settings size={20} />,
       },
     ],
     student: [
@@ -99,15 +109,14 @@ const DashboardLayout = () => {
         label: "Payment History",
         icon: <CreditCard size={20} />,
       },
-      {
-        path: "profile-settings",
-        label: "Settings",
-        icon: <Settings size={20} />,
-      },
     ],
   };
 
-  const currentMenu = menuConfig[role] || [];
+  // কারেন্ট রোলের মেনু নিয়ে আসা
+  const roleMenu = menuConfig[role] || [];
+
+  // ⚙️ গ্লোবাল সেটিংস রাউট (সব রোলের জন্যই কমন নিচের বাটনটার জন্য)
+  const settingsPath = "profile-settings";
 
   return (
     <div
@@ -130,11 +139,11 @@ const DashboardLayout = () => {
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-600 pl-4 mb-4">
               {role} Dashboard
             </p>
-            {currentMenu.map((item, idx) => (
+            {roleMenu.map((item, idx) => (
               <NavLink
                 key={idx}
                 to={item.path}
-                end={item.path === "tutor" || item.path === "admin"}
+                end // সঠিক পেজে অ্যাক্টিভ ক্লাস ধরে রাখার জন্য
                 className={({ isActive }) =>
                   `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${
                     isActive
@@ -171,7 +180,7 @@ const DashboardLayout = () => {
 
           {/* ⚙️ Profile Settings Button */}
           <NavLink
-            to="profile-settings"
+            to={settingsPath}
             className={({ isActive }) =>
               `flex items-center gap-4 px-5 h-12 rounded-2xl font-black text-sm transition-all ${
                 isActive
@@ -219,20 +228,40 @@ const DashboardLayout = () => {
                 eTuitionBD
               </span>
               <nav className="space-y-2">
-                {currentMenu.map((item, idx) => (
+                {roleMenu.map((item, idx) => (
                   <NavLink
                     key={idx}
                     to={item.path}
                     onClick={() => setIsMobileOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${isActive ? "bg-[#40bfff] text-white" : "hover:bg-slate-900 hover:text-white"}`
+                      `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${
+                        isActive
+                          ? "bg-[#40bfff] text-white"
+                          : "hover:bg-slate-900 hover:text-white"
+                      }`
                     }
                   >
                     {item.icon} <span>{item.label}</span>
                   </NavLink>
                 ))}
+
+                {/* ⚙️ Mobile Settings Link */}
+                <NavLink
+                  to={settingsPath}
+                  onClick={() => setIsMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 px-5 h-14 rounded-2xl font-black transition-all ${
+                      isActive
+                        ? "bg-[#40bfff] text-white"
+                        : "hover:bg-slate-900 hover:text-white"
+                    }`
+                  }
+                >
+                  <Settings size={20} /> <span>Profile Settings</span>
+                </NavLink>
               </nav>
             </div>
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-4 px-5 h-14 w-full rounded-2xl font-black text-rose-400 hover:bg-rose-500/10 transition-all"

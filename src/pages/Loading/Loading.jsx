@@ -47,7 +47,7 @@ const Loading = () => {
             transition={{ duration: 0.5 }}
             className="text-3xl font-black tracking-tighter text-slate-800"
           >
-            eTuition<span className="text-[#40bfff]">al</span>
+            eTuition<span className="text-[#40bfff]">BD</span>
           </motion.h2>
           
           {/* Text-based Loading Dot Animation */}
