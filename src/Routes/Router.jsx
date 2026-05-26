@@ -25,6 +25,7 @@ import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
 import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
+import CheckoutForm from "../pages/CheckoutForm/CheckoutForm";
 // import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
         path: "/contact",
         Component: Contact,
       },
+      {
+        path: '/checkout',
+        element: <CheckoutForm></CheckoutForm>
+      }
     ],
   },
   {

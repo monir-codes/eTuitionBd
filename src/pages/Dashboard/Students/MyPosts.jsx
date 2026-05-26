@@ -12,12 +12,15 @@ const MyPosts = () => {
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
 
+  console.log(user)
+  console.log(user?.uid)
+
   // 🔄 ১. TanStack useQuery: ডাটাবেজ থেকে এই ইউজারের সব পোস্ট লাইভ নিয়ে আসা
   const { data: myPosts = [], isLoading } = useQuery({
-    queryKey: ["my-posts", user?.email],
-    enabled: !!user?.email,
+    queryKey: ["my-posts", user?.uid],
+    enabled: !!user?.uid,
     queryFn: async () => {
-      const res = await axiosSecure.get(`/api/tuitions?email=${user?.email}`);
+      const res = await axiosSecure.get(`/api/tuitions/my-posts/${user?.uid}`);
       return res.data;
     },
   });
@@ -42,7 +45,7 @@ const MyPosts = () => {
       });
       
       // ক্যাশ রিফ্রেশ
-      queryClient.invalidateQueries({ queryKey: ["my-posts", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["my-posts", user?.uid] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "Failed to delete post.");

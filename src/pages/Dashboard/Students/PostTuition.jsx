@@ -1,18 +1,18 @@
 import { useForm, useFieldArray } from "react-hook-form"; // ✅ useFieldArray যোগ করা হয়েছে requirements এর জন্য
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { 
-  BookOpen, 
-  MapPin, 
-  CircleDollarSign, 
-  Calendar, 
-  Users, 
-  GraduationCap, 
-  Save, 
+import {
+  BookOpen,
+  MapPin,
+  CircleDollarSign,
+  Calendar,
+  Users,
+  GraduationCap,
+  Save,
   Loader2,
   FileText,
   Plus,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -34,14 +34,14 @@ const PostTuition = () => {
   } = useForm({
     defaultValues: {
       // requirements এ ডিফল্ট একটা ফিল্ড ওপেন থাকবে
-      requirements: [{ value: "" }]
-    }
+      requirements: [{ value: "" }],
+    },
   });
 
   // 🛠️ requirements ফিল্ডকে ডাইনামিক অ্যারে বানানোর সেটআপ
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "requirements"
+    name: "requirements",
   });
 
   // 🎯 সাবমিট হ্যান্ডলার (আপনার মঙ্গোডিবি অবজেক্ট ফরম্যাট অনুযায়ী ১০০% ম্যাচড)
@@ -51,41 +51,56 @@ const PostTuition = () => {
 
     // ডাইনামিক ইনপুট থেকে শুধু স্ট্রিং টেক্সটগুলো বের করে অ্যারে বানানো
     const requirementsArray = data.requirements
-      .map(req => req.value.trim())
-      .filter(val => val !== "");
+      .map((req) => req.value.trim())
+      .filter((val) => val !== "");
 
     // 📦 আপনার রিকোয়ারমেন্ট অনুযায়ী নিখুঁত পেলোড অবজেক্ট
     const postPayload = {
       title: data.title,
+      studentUID: user?.uid,
+      classLevel: data.classLevel,
       subject: data.subjects,
       location: data.location,
       salary: `${data.salary} BDT`,
-      days: data.daysPerWeek,
+      days: `${data.daysPerWeek} Days/Week`,
       category: data.category,
       studentGender: data.studentGender,
       preferredTutor: data.preferredTutor,
       description: data.description,
-      requirements: requirementsArray.length > 0 ? requirementsArray : ["Not specified"],
+      requirements:
+        requirementsArray.length > 0 ? requirementsArray : ["Not specified"],
       studentEmail: user?.email,
-      studentName: user?.displayName || "Mst. Rokeya Begum",
-      postedAt: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }), // e.g. "May 25, 2026"
-      status: "open"
+      studentName: user?.displayName,
+      postedAt: new Date().toLocaleDateString("en-US", {
+        timeZone: "Asia/Dhaka", 
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }), // e.g. "May 26, 2026"
+      status: "open",
     };
 
     try {
       const res = await axiosSecure.post("/api/tuitions", postPayload);
-      
+
       if (res.data) {
         toast.success("Tuition post published successfully!");
         reset({
-          title: "", subjects: "", location: "", salary: "", 
-          daysPerWeek: "", description: "", requirements: [{ value: "" }]
+          title: "",
+          subjects: "",
+          location: "",
+          salary: "",
+          daysPerWeek: "",
+          description: "",
+          requirements: [{ value: "" }],
         });
         navigate("/dashboard/student/my-posts");
       }
     } catch (err) {
       console.error(err);
-      toast.error(err?.response?.data?.message || "Failed to publish tuition post.");
+      toast.error(
+        err?.response?.data?.message || "Failed to publish tuition post.",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +115,9 @@ const PostTuition = () => {
     >
       {/* ⚙️ Header */}
       <div>
-        <h1 className="text-3xl font-black text-slate-800 mb-2">Create Tuition Post</h1>
+        <h1 className="text-3xl font-black text-slate-800 mb-2">
+          Create Tuition Post
+        </h1>
         <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">
           Fill in the fields below to publish a new tuition requirement
         </p>
@@ -109,18 +126,21 @@ const PostTuition = () => {
       {/* 📝 Main Form */}
       <div className="max-w-4xl bg-white p-8 sm:p-10 rounded-[3rem] border border-slate-100 shadow-sm space-y-6">
         <h3 className="text-xl font-black text-slate-800 flex items-center gap-2 mb-2">
-          <BookOpen size={20} className="text-[#40bfff]" /> Tuition Requirements & Details
+          <BookOpen size={20} className="text-[#40bfff]" /> Tuition Requirements
+          & Details
         </h3>
 
         <form onSubmit={handleSubmit(onSubmitTuition)} className="space-y-6">
-          
           {/* ১. Tuition Title */}
           <div>
             <label className="block text-sm font-black text-slate-700 mb-2 uppercase tracking-wider">
               Tuition Title / Headline
             </label>
             <div className="relative">
-              <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+              <BookOpen
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                size={18}
+              />
               <input
                 {...register("title", { required: "Title is required" })}
                 type="text"
@@ -128,7 +148,11 @@ const PostTuition = () => {
                 className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700"
               />
             </div>
-            {errors.title && <p className="text-red-500 text-xs mt-2 ml-2 font-black">⚠️ {errors.title.message}</p>}
+            {errors.title && (
+              <p className="text-red-500 text-xs mt-2 ml-2 font-black">
+                ⚠️ {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6">
@@ -138,9 +162,14 @@ const PostTuition = () => {
                 Class / Student Level
               </label>
               <div className="relative">
-                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <GraduationCap
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <select
-                  {...register("classLevel", { required: "Class level is required" })}
+                  {...register("classLevel", {
+                    required: "Class level is required",
+                  })}
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700 appearance-none"
                 >
                   <option value="">Select Class</option>
@@ -161,9 +190,14 @@ const PostTuition = () => {
                 Subjects to Teach
               </label>
               <div className="relative">
-                <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <BookOpen
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <input
-                  {...register("subjects", { required: "Subjects are required" })}
+                  {...register("subjects", {
+                    required: "Subjects are required",
+                  })}
                   type="text"
                   placeholder="e.g. Mathematics & Higher Math"
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700"
@@ -179,7 +213,10 @@ const PostTuition = () => {
                 Medium / Category
               </label>
               <div className="relative">
-                <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <GraduationCap
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <select
                   {...register("category", { required: "Medium is required" })}
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700 appearance-none"
@@ -198,9 +235,14 @@ const PostTuition = () => {
                 Student Gender
               </label>
               <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <Users
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <select
-                  {...register("studentGender", { required: "Student gender is required" })}
+                  {...register("studentGender", {
+                    required: "Student gender is required",
+                  })}
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700 appearance-none"
                 >
                   <option value="Male">Male</option>
@@ -215,7 +257,10 @@ const PostTuition = () => {
                 Preferred Tutor
               </label>
               <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <Users
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <select
                   {...register("preferredTutor")}
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700 appearance-none"
@@ -235,9 +280,14 @@ const PostTuition = () => {
                 Location / Area Address
               </label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <MapPin
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <input
-                  {...register("location", { required: "Location is required" })}
+                  {...register("location", {
+                    required: "Location is required",
+                  })}
                   type="text"
                   placeholder="e.g. Sultanganj Para, Bogra"
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700"
@@ -251,7 +301,10 @@ const PostTuition = () => {
                 Salary Budget (Monthly)
               </label>
               <div className="relative">
-                <CircleDollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <CircleDollarSign
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <input
                   {...register("salary", { required: "Salary is required" })}
                   type="number"
@@ -267,9 +320,14 @@ const PostTuition = () => {
                 Days Per Week
               </label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                <Calendar
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                  size={18}
+                />
                 <input
-                  {...register("daysPerWeek", { required: "Days selection is required" })}
+                  {...register("daysPerWeek", {
+                    required: "Days selection is required",
+                  })}
                   type="text"
                   placeholder="e.g. 3 Days/Week"
                   className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700"
@@ -284,9 +342,14 @@ const PostTuition = () => {
               Description / Details
             </label>
             <div className="relative">
-              <FileText className="absolute left-4 top-5 text-slate-300" size={18} />
+              <FileText
+                className="absolute left-4 top-5 text-slate-300"
+                size={18}
+              />
               <textarea
-                {...register("description", { required: "Description is required" })}
+                {...register("description", {
+                  required: "Description is required",
+                })}
                 rows="4"
                 placeholder="Looking for an experienced tutor for my younger brother..."
                 className="w-full pl-12 pr-4 p-4 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700 resize-none"
@@ -299,7 +362,7 @@ const PostTuition = () => {
             <label className="block text-sm font-black text-slate-700 uppercase tracking-wider">
               Specific Requirements (Dynamic List)
             </label>
-            
+
             {fields.map((field, index) => (
               <div key={field.id} className="flex items-center gap-3">
                 <div className="relative flex-grow">
@@ -313,7 +376,7 @@ const PostTuition = () => {
                     className="w-full pl-12 pr-4 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-slate-700"
                   />
                 </div>
-                
+
                 {fields.length > 1 && (
                   <button
                     type="button"
@@ -341,7 +404,12 @@ const PostTuition = () => {
             disabled={loading}
             className="w-full sm:w-auto bg-[#40bfff] text-white h-14 px-8 rounded-2xl font-black text-md shadow-xl shadow-blue-100 hover:bg-[#3498db] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} Publish Tuition Post
+            {loading ? (
+              <Loader2 className="animate-spin" size={18} />
+            ) : (
+              <Save size={18} />
+            )}{" "}
+            Publish Tuition Post
           </button>
         </form>
       </div>
