@@ -77,7 +77,7 @@ const PostTuition = () => {
         month: "short",
         day: "numeric",
       }), // e.g. "May 26, 2026"
-      status: "open",
+      status: "pending",
     };
 
     try {

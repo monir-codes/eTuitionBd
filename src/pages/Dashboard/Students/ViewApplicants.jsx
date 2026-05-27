@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, X, Mail, Phone, GraduationCap, Calendar, Loader2, AlertTriangle, FileText } from "lucide-react";
 import useAxios from "../../../hooks/useAxios";
 import { toast } from "react-toastify";
+import useAuth from "../../../hooks/useAuth";
 
 const ViewApplicants = () => {
   const { id } = useParams(); // টিউশন পোস্টের ID রাউট থেকে নেওয়া হচ্ছে
+  const { user } = useAuth();
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  // 🔄 ১. TanStack Query দিয়ে ওই নির্দিষ্ট টিউশন পোস্টের সব আবেদনকারী টিউটরদের ফেচ করা
+  // 🔄 ১. TanStack Query দিয়ে ওই নির্দিষ্ট টিউশন পোস্টের সব আবেদনকারী টিউটরদের ফেচ করা
   const { data: applicants = [], isLoading, isError, error } = useQuery({
     queryKey: ["applicants", id],
     queryFn: async () => {
@@ -46,6 +49,7 @@ const ViewApplicants = () => {
 
   const handleStatusChange = (applicantId, statusAction) => {
     statusMutation.mutate({ applicantId, statusAction });
+    navigate(`/checkout`)
   };
 
   // ⏳ ডাটা লোডিং স্টেট

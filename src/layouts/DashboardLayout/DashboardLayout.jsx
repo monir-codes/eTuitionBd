@@ -16,6 +16,7 @@ import {
   BookCheck,
   CircleUserRound,
 } from "lucide-react";
+import { BiHome } from "react-icons/bi";
 import useAuth from "../../hooks/useAuth";
 import Loading from "../../pages/Loading/Loading";
 import { useQuery } from "@tanstack/react-query";
@@ -121,7 +122,7 @@ const DashboardLayout = () => {
   return (
     <div
       style={{ fontFamily: "'League Spartan', sans-serif" }}
-      className="min-h-screen bg-[#f8fafc] flex"
+      className="min-h-screen bg-[#f8fafc] flex "
     >
       {/* 💻 Desktop Sidebar */}
       <aside className="w-80 bg-slate-950 text-slate-400 p-8 flex flex-col justify-between hidden lg:flex fixed h-screen z-30">
@@ -224,9 +225,15 @@ const DashboardLayout = () => {
             className="fixed inset-y-0 left-0 w-72 bg-slate-950 text-slate-400 p-8 flex flex-col justify-between z-40 lg:hidden shadow-2xl"
           >
             <div className="space-y-12">
+              <div className="flex items-center gap-8 mb-6">
+
               <span className="text-2xl font-black tracking-tighter text-white block pl-4">
                 eTuitionBD
               </span>
+              <Link to="/" className="w-full bg-gray-800 p-2 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors cursor-pointer">
+                 <BiHome size={20} />
+              </Link>
+              </div>
               <nav className="space-y-2">
                 {roleMenu.map((item, idx) => (
                   <NavLink
