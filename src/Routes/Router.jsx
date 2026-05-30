@@ -25,7 +25,7 @@ import ManageUsers from "../pages/Dashboard/Admin/ManageUsers";
 import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
 import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
-import CheckoutForm from "../pages/CheckoutForm/CheckoutForm";
+import PaymentSuccess from "../pages/Dashboard/PaymentSuccess/PaymentSuccess";
 // import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
@@ -65,10 +65,10 @@ export const router = createBrowserRouter([
         path: "/contact",
         Component: Contact,
       },
-      {
-        path: '/checkout',
-        element: <CheckoutForm></CheckoutForm>
-      }
+      // {
+      //   path: "/checkout",
+      //   element: <CheckoutForm></CheckoutForm>,
+      // },
     ],
   },
   {
@@ -129,6 +129,10 @@ export const router = createBrowserRouter([
       {
         path: "student/applicants/:id",
         element: <ViewApplicants></ViewApplicants>,
+      },
+      {
+        path: "payment-success",
+        element: <PaymentSuccess></PaymentSuccess>,
       },
       {
         path: "student/payment-history",

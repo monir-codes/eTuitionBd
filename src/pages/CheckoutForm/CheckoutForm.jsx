@@ -1,188 +1,49 @@
-import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import useAxios from "../../hooks/useAxios";
-import useAuth from "../../hooks/useAuth";
-import { toast } from "react-toastify";
-import { Loader2 } from "lucide-react";
+import { Loader2, CreditCard } from "lucide-react";
 
-const CheckoutForm = ({ price, tuitionTitle }) => {
-  const stripe = useStripe();
-  const elements = useElements();
+const CheckoutForm = ({ price, tuitionTitle, tuitionId, tutorId }) => {
   const axiosSecure = useAxios();
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const [clientSecret, setClientSecret] = useState("");
-  const [processing, setProcessing] = useState(false);
-
-  // 🔄 Create Payment Intent
-  useEffect(() => {
-    const getClientSecret = async () => {
-      try {
-        if (Number(price) > 0) {
-          const res = await axiosSecure.post(
-            "/api/payments",
-            {
-              price: Number(price),
-            }
-          );
-
-          setClientSecret(res.data.clientSecret);
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to initialize payment.");
-      }
-    };
-
-    getClientSecret();
-  }, [price, axiosSecure]);
-
-  // 💳 Handle Payment
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (!stripe || !elements || processing) return;
-
-    const card = elements.getElement(CardElement);
-
-    if (!card) return;
-
-    setProcessing(true);
-
-    const toastId = toast.loading("Processing payment...");
-
+  const handleCheckoutRedirect = async () => {
+    setLoading(true);
     try {
-      // ✅ Create Payment Method
-      const { error: paymentMethodError } =
-        await stripe.createPaymentMethod({
-          type: "card",
-          card,
-        });
+      // ব্যাকএন্ড থেকে স্ট্রাইপ লিংকটা নিয়ে আসা
+      const res = await axiosSecure.post("/api/create-checkout-session", {
+        price,
+        tuitionTitle,
+        tuitionId,
+        tutorId
+      });
 
-      if (paymentMethodError) {
-        toast.update(toastId, {
-          render: paymentMethodError.message,
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-
-        setProcessing(false);
-        return;
-      }
-
-      // ✅ Confirm Card Payment
-      const { paymentIntent, error: confirmError } =
-        await stripe.confirmCardPayment(clientSecret, {
-          payment_method: {
-            card,
-            billing_details: {
-              email: user?.email || "anonymous",
-              name: user?.displayName || "anonymous",
-            },
-          },
-        });
-
-      if (confirmError) {
-        toast.update(toastId, {
-          render: confirmError.message,
-          type: "error",
-          isLoading: false,
-          autoClose: 3000,
-        });
-
-        setProcessing(false);
-        return;
-      }
-
-      // ✅ Payment Success
-      if (paymentIntent?.status === "succeeded") {
-        const paymentPayload = {
-          transactionId: paymentIntent.id,
-          tuitionTitle,
-          amount: Number(price),
-          currency: "BDT",
-
-          paymentMethod: "Stripe Card",
-          type: "debit",
-          status: "success",
-
-          studentName: user?.displayName,
-          studentEmail: user?.email,
-          studentUID: user?.uid,
-          studentPhoto: user?.photoURL,
-
-          paidAt: new Date(),
-        };
-
-        // ✅ Save Payment To Database
-        const res = await axiosSecure.post(
-          "/api/payments",
-          paymentPayload
-        );
-
-        if (res.data.insertedId) {
-          toast.update(toastId, {
-            render: "Payment Successful!",
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-          });
-        }
+      if (res.data.url) {
+        // 🚀 ইউজারকে সরাসরি স্ট্রাইপের অফিশিয়াল পেমেন্ট ফর্মে পাঠিয়ে দেওয়া!
+        window.location.href = res.data.url;
       }
     } catch (error) {
       console.error(error);
-
-      toast.update(toastId, {
-        render: error.message || "Payment failed.",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
+      alert("Failed to redirect to Stripe.");
     } finally {
-      setProcessing(false);
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* 💳 Card Input */}
-      <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl">
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
-                color: "#1e293b",
-                fontFamily: "'League Spartan', sans-serif",
-                "::placeholder": {
-                  color: "#cbd5e1",
-                },
-              },
-              invalid: {
-                color: "#ef4444",
-              },
-            },
-          }}
-        />
-      </div>
-
-      {/* 🚀 Submit Button */}
-      <button
-        type="submit"
-        disabled={!stripe || !clientSecret || processing}
-        className="w-full bg-[#40bfff] text-white h-14 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-[#3498db] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {processing ? (
-          <>
-            <Loader2 className="animate-spin" size={18} />
-            Processing...
-          </>
-        ) : (
-          <>Pay {price} BDT</>
-        )}
-      </button>
-    </form>
+    <button
+      onClick={handleCheckoutRedirect}
+      disabled={loading}
+      className="w-full bg-[#40bfff] text-white h-14 rounded-2xl font-black shadow-lg hover:bg-[#3498db] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+    >
+      {loading ? (
+        <Loader2 className="animate-spin" size={18} />
+      ) : (
+        <>
+          <CreditCard size={18} />
+          <span>Pay {price} BDT via Stripe Form</span>
+        </>
+      )}
+    </button>
   );
 };
 
