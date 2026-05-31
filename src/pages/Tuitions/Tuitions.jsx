@@ -1,208 +1,314 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, MapPin, CircleDollarSign, Clock, BookOpen, Filter, ArrowRight, Loader2, AlertTriangle, GraduationCap, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, CircleDollarSign, Clock, BookOpen, ArrowRight, Loader2, AlertTriangle, GraduationCap, User, ChevronLeft, ChevronRight, RotateCcw, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "../../hooks/useAxios";
+import { toast } from "react-toastify";
+import useAuth from "../../hooks/useAuth"; 
 
 const Tuitions = () => {
+  const { user } = useAuth(); 
   const axiosSecure = useAxios();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
   
-  // 📄 পেজিনেশন স্টেট কন্ট্রোল
+  // ⚙️ ফিল্টার ও সর্ট স্টেট
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("All"); 
+  const [filterClass, setFilterClass] = useState("All");       
+  const [filterSubject, setFilterSubject] = useState("All");   
+  const [filterLocation, setFilterLocation] = useState("All"); 
+  const [sortBy, setSortBy] = useState("date");                
+  const [sortOrder, setSortOrder] = useState("desc");          
+  
+  // 📄 পেজিনেশন স্টেট
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; // প্রতি পেজে কয়টা কার্ড দেখাবে
+  const itemsPerPage = 6;
 
-  // 🔄 TanStack Query: পেজ নম্বর, সার্চ বা ফিল্টার চেঞ্জ হলেই এপিআই অটো ট্রিগার হবে
+  // 🔄 TanStack Query
   const { data: responseData = { tuitions: [], totalCount: 0 }, isLoading, isError, error } = useQuery({
-    queryKey: ["tuitions", searchTerm, filterCategory, currentPage], 
+    queryKey: ["tuitions", searchTerm, filterCategory, filterClass, filterSubject, filterLocation, sortBy, sortOrder, currentPage], 
     queryFn: async () => {
       const res = await axiosSecure.get("/api/tuitions", {
         params: {
           search: searchTerm,
           category: filterCategory,
+          classLevel: filterClass,
+          subject: filterSubject,
+          location: filterLocation,
+          sortBy: sortBy,
+          sortOrder: sortOrder,
           page: currentPage,
           limit: itemsPerPage
         },
       });
       
-      // সেফটি চেক: ব্যাকএন্ড যদি ডিরেক্ট অ্যারে পাঠায় অথবা অবজেক্টে র‍্যাপ করে পাঠায়
       if (Array.isArray(res.data)) {
         return { tuitions: res.data, totalCount: res.data.length };
       }
-      return res.data; // অবজেক্ট ফরম্যাট: { tuitions: [...], totalCount: 24 }
+      return res.data;
     },
-    keepPrevkeepPreviousData: false,
   });
 
-  // ডাটা এক্সট্র্যাক্ট করা
   const tuitionPosts = responseData?.tuitions || [];
   const totalCount = responseData?.totalCount || 0;
-  
-  // টোটাল কয়টা পেজ হবে তা ক্যালকুলেট করা
   const totalPages = Math.ceil(totalCount / itemsPerPage) || 1;
 
-  // সার্চ বা ফিল্টার চেঞ্জ হলে পেজ নম্বর ১ এ রিসেট করার হ্যান্ডলার
-  const handleFilterChange = (e) => {
-    setFilterCategory(e.target.value);
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setFilterCategory("All");
+    setFilterClass("All");
+    setFilterSubject("All");
+    setFilterLocation("All");
+    setSortBy("date");
+    setSortOrder("desc");
     setCurrentPage(1);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1);
+  const handleAddBookmark = async (id) => {
+    if (!user || !user.email) {
+      return toast.error("Please login to bookmark posts! 🔒");
+    }
+
+    const bookmarkInfo = {
+      userEmail: user.email,
+      tuitionId: id,
+      bookmarkedAt: new Date()
+    };
+
+    try {
+      const res = await axiosSecure.post("/api/bookmarks", bookmarkInfo);
+      if (res.data.success) {
+        toast.success("Post added to your bookmarks! ❤️");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Already bookmarked this post!");
+    }
   };
 
   return (
     <div 
       style={{ fontFamily: "'League Spartan', sans-serif" }}
-      className="min-h-screen bg-[#f8fafc] pt-28 pb-20 select-none"
+      className="min-h-screen bg-[#f8fafc] pt-24 sm:pt-28 pb-20 select-none overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* 🔍 Search & Filter Header */}
-        <div className="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-12">
-          <div className="flex flex-col lg:flex-row gap-6 items-center">
+        {/* 🔍 Search & Advanced Filter Controller Box (Responsive Layout) */}
+        <div className="bg-white p-4 sm:p-6 rounded-3xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 mb-8 space-y-4 w-full">
+          
+          {/* গ্লোবাল সার্চ ইনপুট */}
+          <div className="relative w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search by title, subject, location..." 
+              className="w-full pl-11 pr-4 h-12 bg-slate-50 border-none rounded-xl sm:rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-xs sm:text-sm text-slate-700 placeholder-slate-400"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            />
+          </div>
+          
+          {/* 🧩 রেসপন্সিভ ড্রপডাউন ইঞ্জিন (মোবাইলে ১ কলাম, ট্যাবে ৩ কলাম, ডেস্কটপে ৬ কলাম) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-black uppercase tracking-wider w-full">
             
-            {/* Search Input */}
-            <div className="relative flex-grow w-full">
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-              <input 
-                type="text" 
-                placeholder="Search by subject, location, or keywords..." 
-                className="w-full pl-14 h-14 bg-slate-50 border-none rounded-2xl font-bold focus:ring-2 focus:ring-[#40bfff]/20 outline-none transition-all text-sm text-slate-700 placeholder-slate-400"
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
+            {/* ১. মিডিয়াম ফিল্টার */}
+            <div className="flex flex-col gap-1 w-full min-w-0">
+              <span className="text-[10px] text-slate-400 pl-1">Medium</span>
+              <select 
+                className="w-full h-11 bg-slate-50 border-none rounded-xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-3 cursor-pointer text-xs"
+                value={filterCategory}
+                onChange={(e) => { setFilterCategory(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="All">All Mediums</option>
+                <option value="Bangla Medium">Bangla Medium</option>
+                <option value="English Medium">English Medium</option>
+                <option value="English Version">English Version</option>
+                <option value="Madrasah Medium">Madrasah</option>
+              </select>
             </div>
-            
-            {/* Medium Filters */}
-            <div className="flex gap-4 w-full lg:w-auto">
-              <div className="relative w-full lg:w-56">
-                <select 
-                  className="w-full h-14 bg-slate-50 border-none rounded-2xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-5 appearance-none cursor-pointer text-sm"
-                  value={filterCategory}
-                  onChange={handleFilterChange}
-                >
-                  <option value="All">All Mediums</option>
-                  <option value="Bangla Medium">Bangla Medium</option>
-                  <option value="English Medium">English Medium</option>
-                  <option value="English Version">English Version</option>
-                  <option value="Madrasah Medium">Madrasah</option>
-                </select>
-              </div>
-              
-              <button className="bg-[#40bfff] hover:bg-[#3498db] border-none text-white font-black px-8 h-14 rounded-2xl shadow-lg shadow-blue-100 flex items-center justify-center transition-colors">
-                <Filter size={18} className="mr-2" /> Filter
+
+            {/* ২. ক্লাস ফিল্টার */}
+            <div className="flex flex-col gap-1 w-full min-w-0">
+              <span className="text-[10px] text-slate-400 pl-1">Class Level</span>
+              <select 
+                className="w-full h-11 bg-slate-50 border-none rounded-xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-3 cursor-pointer text-xs"
+                value={filterClass}
+                onChange={(e) => { setFilterClass(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="All">All Classes</option>
+                <option value="Class 9">Class 9</option>
+                <option value="Class 10">Class 10</option>
+                <option value="HSC">HSC</option>
+              </select>
+            </div>
+
+            {/* ৩. সাবজেক্ট ফিল্টার */}
+            <div className="flex flex-col gap-1 w-full min-w-0">
+              <span className="text-[10px] text-slate-400 pl-1">Subject</span>
+              <select 
+                className="w-full h-11 bg-slate-50 border-none rounded-xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-3 cursor-pointer text-xs"
+                value={filterSubject}
+                onChange={(e) => { setFilterSubject(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="All">All Subjects</option>
+                <option value="Physics">Physics</option>
+                <option value="Higher Math">Higher Math</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+
+            {/* ৪. লোকেশন ফিল্টার */}
+            <div className="flex flex-col gap-1 w-full min-w-0">
+              <span className="text-[10px] text-slate-400 pl-1">Location</span>
+              <select 
+                className="w-full h-11 bg-slate-50 border-none rounded-xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-3 cursor-pointer text-xs"
+                value={filterLocation}
+                onChange={(e) => { setFilterLocation(e.target.value); setCurrentPage(1); }}
+              >
+                <option value="All">All Locations</option>
+                <option value="Bogra">Bogra</option>
+                <option value="Dhaka">Dhaka</option>
+              </select>
+            </div>
+
+            {/* ৫. সর্ট কন্ট্রোলার */}
+            <div className="flex flex-col gap-1 w-full min-w-0">
+              <span className="text-[10px] text-slate-400 pl-1">Sort Flow</span>
+              <select 
+                className="w-full h-11 bg-slate-50 border-none rounded-xl font-bold text-slate-600 focus:ring-2 focus:ring-[#40bfff]/20 outline-none px-3 cursor-pointer text-xs"
+                value={`${sortBy}-${sortOrder}`}
+                onChange={(e) => {
+                  const [field, order] = e.target.value.split("-");
+                  setSortBy(field);
+                  setSortOrder(order);
+                  setCurrentPage(1);
+                }}
+              >
+                <option value="date-desc">Newest Circulars</option>
+                <option value="date-asc">Oldest Circulars</option>
+                <option value="budget-desc">Salary: High to Low</option>
+                <option value="budget-asc">Salary: Low to High</option>
+              </select>
+            </div>
+
+            {/* ৬. রিসেট বাটন (মোবাইলে ফুল উইথ নেবে) */}
+            <div className="flex flex-col justify-end w-full">
+              <button 
+                onClick={handleResetFilters}
+                className="w-full h-11 bg-slate-950 text-white hover:bg-[#40bfff] rounded-xl font-black flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm"
+              >
+                <RotateCcw size={14} /> Reset
               </button>
             </div>
+
           </div>
         </div>
 
         {/* ⏳ লোডিং স্টেট */}
         {isLoading && (
-          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-3">
-            <Loader2 className="animate-spin text-[#40bfff]" size={40} />
-            <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">Scanning Live Tuition Board...</p>
+          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-3 w-full">
+            <Loader2 className="animate-spin text-[#40bfff]" size={36} />
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest text-center">Scanning Live Tuition Board...</p>
           </div>
         )}
 
         {/* ⚠️ এরর স্টেট */}
         {isError && (
-          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-2 text-rose-500">
-            <AlertTriangle size={40} />
-            <p className="font-black uppercase tracking-wider">Sync Error: {error.message}</p>
+          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-2 text-rose-500 w-full text-center">
+            <AlertTriangle size={36} />
+            <p className="font-black uppercase tracking-wider text-xs sm:text-sm">Sync Error: {error.message}</p>
           </div>
         )}
 
-        {/* 📚 Improved Listings Grid */}
+        {/* 📚 Listings Grid */}
         {!isLoading && !isError && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 w-full">
             {tuitionPosts.length > 0 ? tuitionPosts.map((post, idx) => (
               <motion.div
                 key={post._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                whileHover={{ y: -8 }}
-                className="group bg-white p-8 rounded-[3rem] border border-slate-100/80 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.04)] hover:shadow-2xl hover:shadow-blue-100/70 transition-all duration-500 flex flex-col justify-between h-full relative overflow-hidden"
+                whileHover={{ y: -5 }}
+                className="group bg-white p-5 sm:p-7 rounded-3xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between h-full relative overflow-hidden w-full min-w-0"
               >
                 <div>
-                  {/* Top Badge Meta row */}
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="px-4 py-1.5 rounded-full bg-blue-50 text-[#40bfff] text-[10px] font-black uppercase tracking-widest border border-blue-100/50">
+                  {/* Top Badge Meta Row */}
+                  <div className="flex justify-between items-center gap-2 mb-4 w-full">
+                    <span className="px-3 py-1 rounded-full bg-blue-50 text-[#40bfff] text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-blue-100/50 truncate max-w-[60%]">
                       {post.category || "General"}
                     </span>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter">
-                      {post.postedAt || "Recent"}
+                    <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-md border truncate max-w-[40%] text-right">
+                      {post.classLevel || post.studentClass || "N/A"}
                     </span>
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-black text-slate-800 mb-5 group-hover:text-[#40bfff] transition-colors leading-snug min-h-[3.5rem] line-clamp-2">
+                  {/* Title (লং টেক্সট প্রোটেকশন) */}
+                  <h3 className="text-base sm:text-lg font-black text-slate-800 mb-4 group-hover:text-[#40bfff] transition-colors leading-snug min-h-[3rem] line-clamp-2 break-words">
                     {post.title}
                   </h3>
 
-                  {/* 📊 উন্নত করা ইনফো সেকশন */}
-                  <div className="space-y-3.5 mb-8">
-                    {/* ✅ ফিক্স: ক্লাস লেভেল ডেটাবেজের ২টা সম্ভাব্য কি (Keys) ট্র্যাকিং */}
-                    <div className="flex items-center gap-3 text-slate-500 font-bold text-sm">
-                      <GraduationCap size={18} className="text-indigo-500/80" />
-                      <span>Class: <span className="text-slate-800">{post.classLevel || post.studentClass || "Not Specified"}</span></span>
+                  {/* 📊 ইনফো বিবরণী (র‍্যাপ সেফটি লক) */}
+                  <div className="space-y-2.5 mb-5 border-t border-b border-slate-50 py-3.5 w-full">
+                    <div className="flex items-center gap-3 text-slate-500 font-bold text-xs sm:text-sm min-w-0">
+                      <BookOpen size={15} className="text-[#40bfff]/80 shrink-0" />
+                      <span className="truncate">Subject: <span className="text-slate-800">{post.subject || post.subjects || "Not Specified"}</span></span>
                     </div>
 
-                    {/* সাবজেক্টস */}
-                    <div className="flex items-center gap-3 text-slate-500 font-bold text-sm">
-                      <BookOpen size={18} className="text-amber-500/80" />
-                      <span>Subject: <span className="text-slate-800">{post.subject || post.subjects || "Not Specified"}</span></span>
+                    <div className="flex items-center gap-3 text-slate-500 font-bold text-xs sm:text-sm min-w-0">
+                      <Clock size={15} className="text-amber-500/80 shrink-0" />
+                      <span className="truncate">Schedule: <span className="text-slate-800">{post.days || post.daysPerWeek || "N/A"}</span></span>
                     </div>
 
-                    {/* শিডিউল/দিন */}
-                    <div className="flex items-center gap-3 text-slate-500 font-bold text-sm">
-                      <Clock size={18} className="text-sky-500/80" />
-                      <span>Schedule: <span className="text-slate-800">{post.days || post.daysPerWeek || "N/A"}</span></span>
+                    <div className="flex items-center gap-3 text-slate-500 font-bold text-xs sm:text-sm min-w-0">
+                      <User size={15} className="text-indigo-400 shrink-0" />
+                      <span className="truncate">Student: <span className="text-slate-800 capitalize">{post.studentGender || "Any"}</span></span>
                     </div>
 
-                    {/* স্টুডেন্ট জেন্ডার */}
-                    <div className="flex items-center gap-3 text-slate-500 font-bold text-sm">
-                      <User size={18} className="text-slate-400" />
-                      <span>Student: <span className="text-slate-800 capitalize">{post.studentGender || "Any"}</span></span>
-                    </div>
-
-                    {/* লোকেশন */}
-                    <div className="flex items-center gap-3 text-slate-500 font-bold text-sm border-t border-slate-50 pt-3 mt-2">
-                      <MapPin size={18} className="text-rose-400/80 shrink-0" />
+                    <div className="flex items-center gap-3 text-slate-500 font-bold text-xs sm:text-sm border-t border-slate-50/50 pt-2.5 mt-1 min-w-0">
+                      <MapPin size={15} className="text-rose-400/80 shrink-0" />
                       <span className="text-slate-700 truncate" title={post.location}>{post.location}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Pricing & Action Row */}
-                <div className="border-t border-slate-100 pt-5 mt-auto">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-400 font-black uppercase tracking-wider">Budget</span>
-                      <div className="flex items-center gap-1.5 text-[#2ecc71] font-black text-xl">
-                        <CircleDollarSign size={20} />
-                        <span>{post.salary}</span>
+                {/* Bottom Pricing, Bookmark & Action Row */}
+                <div className="mt-auto border-t border-slate-50 pt-4 w-full">
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-black uppercase tracking-wider">Budget</span>
+                      <div className="flex items-center gap-1 text-emerald-600 font-black text-base sm:text-lg truncate">
+                        <CircleDollarSign size={16} className="text-emerald-500 shrink-0" />
+                        <span className="truncate">{post.salary}</span>
                       </div>
                     </div>
                     
-                    <Link 
-                      to={`/tuitions/${post._id}`} 
-                      className="h-12 w-12 bg-slate-950 text-white rounded-2xl flex items-center justify-center hover:bg-[#40bfff] transition-all duration-300 shadow-md active:scale-95 group-hover:scale-105"
-                    >
-                      <ArrowRight size={18} />
-                    </Link>
+                    {/* রাইট সাইড অ্যাকশন বাটন প্যানেল */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button 
+                        onClick={() => handleAddBookmark(post._id)}
+                        className="h-10 w-10 sm:h-11 sm:w-11 bg-slate-50 text-slate-400 hover:text-[#40bfff] hover:bg-blue-50 border border-slate-100 rounded-xl flex items-center justify-center transition-all active:scale-95 shadow-none"
+                        title="Save Circular"
+                      >
+                        <Bookmark size={15} />
+                      </button>
+
+                      <Link 
+                        to={`/tuitions/${post._id}`} 
+                        className="h-10 w-10 sm:h-11 sm:w-11 bg-slate-950 text-white rounded-xl flex items-center justify-center hover:bg-[#40bfff] transition-all duration-200 shadow-sm active:scale-95"
+                      >
+                        <ArrowRight size={15} />
+                      </Link>
+                    </div>
+
                   </div>
                 </div>
 
               </motion.div>
             )) : (
-              <div className="col-span-full text-center py-20 bg-white rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3">
-                <AlertTriangle size={36} className="text-slate-300" />
-                <p className="font-black text-slate-300 uppercase tracking-widest text-sm">
+              <div className="col-span-full text-center py-16 sm:py-20 bg-white rounded-2xl sm:rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 p-4 w-full">
+                <AlertTriangle size={32} className="text-slate-300" />
+                <p className="font-black text-slate-300 uppercase tracking-widest text-xs sm:text-sm">
                   No tuition circulars match your active filters
                 </p>
               </div>
@@ -210,28 +316,26 @@ const Tuitions = () => {
           </div>
         )}
 
-        {/* 📄 ফিক্সড ও ফুল ডাইনামিক তানস্ট্যাক পেজিনেশন বক্স */}
+        {/* 📄 রেসপন্সিভ তানস্ট্যাক পেজিনেশন বক্স */}
         {!isLoading && !isError && totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-12">
-            {/* Previous Button */}
+          <div className="flex justify-center items-center gap-1.5 sm:gap-2 mt-12 w-full flex-wrap">
             <button 
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="h-12 px-4 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+              className="h-10 px-2.5 sm:px-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-xs"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={15} />
             </button>
 
-            {/* Dynamic Page Number Buttons */}
             {[...Array(totalPages).keys()].map((pageIdx) => {
               const pageNum = pageIdx + 1;
               return (
                 <button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`h-12 w-12 rounded-xl font-black transition-all ${
+                  className={`h-10 w-10 rounded-xl font-black text-xs transition-all ${
                     currentPage === pageNum
-                      ? "bg-[#40bfff] text-white shadow-lg shadow-blue-100"
+                      ? "bg-[#40bfff] text-white shadow-md shadow-blue-100"
                       : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
                   }`}
                 >
@@ -240,13 +344,12 @@ const Tuitions = () => {
               );
             })}
 
-            {/* Next Button */}
             <button 
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="h-12 px-4 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+              className="h-10 px-2.5 sm:px-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-xs"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={15} />
             </button>
           </div>
         )}

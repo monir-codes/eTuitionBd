@@ -16,6 +16,7 @@ import {
   BookCheck,
   CircleUserRound,
   BarChart3,
+  Bookmark,
 } from "lucide-react";
 import { BiHome } from "react-icons/bi";
 import useAuth from "../../hooks/useAuth";
@@ -53,70 +54,82 @@ const DashboardLayout = () => {
     });
   };
 
-  // 📋 ৩. ফিক্সড রাউটিং পাথ (চাইল্ড রাউটের নিয়ম অনুযায়ী প্রিফিক্স ও স্ল্যাশ মুক্ত)
-  const menuConfig = {
-    admin: [
-      {
-        path: "admin",
-        label: "Overview",
-        icon: <LayoutDashboard size={20} />,
-      },
-      {
-        path: "admin/manage-tutors",
-        label: "Manage Tutors",
-        icon: <GraduationCap size={20} />,
-      },
-      {
-        path: "admin/manage-tuitions",
-        label: "Manage Tuitions",
-        icon: <BookCheck size={20} />,
-      },
-      {
-        path: "admin/manage-users",
-        label: "Manage Users",
-        icon: <CircleUserRound size={20} />,
-      },
-      {
-        path: "admin/reports-analytics", 
-        label: "Reports & Analytics", 
-        icon: <BarChart3 size={20} />, 
-      },
-    ],
-    tutor: [
-      {
-        path: "tutor",
-        label: "Tutor Profile",
-        icon: <User size={20} />,
-      },
-      {
-        path: "tutor/applied-jobs",
-        label: "Applied Jobs",
-        icon: <Briefcase size={20} />,
-      },
-      {
-        path: "tutor/payment-history",
-        label: "Payment History",
-        icon: <CreditCard size={20} />,
-      },
-    ],
-    student: [
-      {
-        path: "student/my-posts",
-        label: "My Tuition Posts",
-        icon: <CheckSquare size={20} />,
-      },
-      {
-        path: "student/post-tuition",
-        label: "Post a Tuition",
-        icon: <FileText size={20} />,
-      },
-      {
-        path: "student/payment-history",
-        label: "Payment History",
-        icon: <CreditCard size={20} />,
-      },
-    ],
-  };
+
+const menuConfig = {
+  admin: [
+    {
+      path: "admin",
+      label: "Overview",
+      icon: <LayoutDashboard size={20} />,
+    },
+    {
+      path: "admin/manage-tutors",
+      label: "Manage Tutors",
+      icon: <GraduationCap size={20} />,
+    },
+    {
+      path: "admin/manage-tuitions",
+      label: "Manage Tuitions",
+      icon: <BookCheck size={20} />,
+    },
+    {
+      path: "admin/manage-users",
+      label: "Manage Users",
+      icon: <CircleUserRound size={20} />,
+    },
+    {
+      path: "admin/reports-analytics", 
+      label: "Reports & Analytics", 
+      icon: <BarChart3 size={20} />, 
+    },
+  ],
+  tutor: [
+    {
+      path: "tutor",
+      label: "Tutor Profile",
+      icon: <User size={20} />,
+    },
+    {
+      path: "tutor/applied-jobs",
+      label: "Applied Jobs",
+      icon: <Briefcase size={20} />,
+    },
+    {
+      path: "tutor/payment-history",
+      label: "Payment History",
+      icon: <CreditCard size={20} />,
+    },
+    // 🔥 টিউটরদের জন্য বুকমার্কড টিউশন সার্কুলার ট্র্যাক করার বাটন
+    {
+      path: "my-bookmarks", 
+      label: "My Bookmarks",
+      icon: <Bookmark size={20} />,
+    },
+  ],
+  student: [
+    {
+      path: "student/my-posts",
+      label: "My Tuition Posts",
+      icon: <CheckSquare size={20} />,
+    },
+    {
+      path: "student/post-tuition",
+      label: "Post a Tuition",
+      icon: <FileText size={20} />,
+    },
+    {
+      path: "student/payment-history",
+      label: "Payment History",
+      icon: <CreditCard size={20} />,
+    },
+    // 🔥 স্টুডেন্ট/অভিভাবকদের জন্য বুকমার্ক করা প্রোফাইল বা পোস্ট ট্র্যাক করার বাটন
+    {
+      path: "my-bookmarks", 
+      label: "My Bookmarks",
+      icon: <Bookmark size={20} />,
+    },
+  ],
+};
 
   // কারেন্ট রোলের মেনু নিয়ে আসা
   const roleMenu = menuConfig[role] || [];

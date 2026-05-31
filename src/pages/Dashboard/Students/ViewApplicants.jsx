@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,12 +23,9 @@ const ViewApplicants = () => {
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
 
-  // ✅ ১. TanStack Query: আবেদনকারী টিউটরদের লিস্ট ফেচ করা
-
-  // console.log(id)
+  // ✅ ১. TanStack Query: আবেদনকারী টিউটরদের লিস্ট ফেচ করা (ইன்பিনিট লুপ ফিক্সড)
   const {
     data: applicants = [],
-    refetch,
     isLoading,
     isError,
     error,
@@ -35,16 +33,16 @@ const ViewApplicants = () => {
     queryKey: ["applicants", id],
     enabled: !!id,
     queryFn: async () => {
-      refetch();
       const res = await axiosSecure.get(`/api/tuitions/applicants/${id}`);
       return res.data;
     },
   });
 
-  // ✅ ২. Reject Mutation (ইনস্ট্যান্ট ডাটাবেজ আপডেট)
+  // ✅ ২. Reject Mutation (ব্যাকএন্ডের ইমেইল কুয়েরির সাথে ১০০% সিঙ্কড)
   const rejectMutation = useMutation({
-    mutationFn: async ({ tutorId }) => {
-      const res = await axiosSecure.patch(`/api/tuitions/application-status?tuitionId=${id}&tutorId=${tutorId}`, {
+    mutationFn: async ({ tutorEmail }) => {
+      // 🎯 ফিক্স: tutorId এর জায়গায় tutorEmail পাঠানো হচ্ছে ব্যাকএন্ড ডিমান্ড অনুযায়ী
+      const res = await axiosSecure.patch(`/api/tuitions/application-status?tuitionId=${id}&tutorEmail=${tutorEmail}`, {
         status: "rejected",
       });
 
@@ -82,7 +80,7 @@ const ViewApplicants = () => {
     },
     onSuccess: (data) => {
       toast.info("Redirecting to Stripe Secure Gateway...");
-      window.location.href = data.url; // স্ট্রাইপ ফর্মে রিডাইরেক্ট
+      window.location.href = data.url; 
     },
     onError: (err) => {
       console.error(err);
@@ -92,7 +90,6 @@ const ViewApplicants = () => {
 
   // ✅ Accept Handler
   const handleAcceptClick = (tutorId, tuitionTitle, salary) => {
-    // স্যালারির ভেতর কমা বা টেক্সট থাকলে তা পিওর নাম্বারে কনভার্ট করার ট্রিক
     const cleanPrice = typeof salary === "string" ? salary.replace(/[^0-9.]/g, "") : salary;
 
     checkoutMutation.mutate({
@@ -102,7 +99,6 @@ const ViewApplicants = () => {
     });
   };
 
-  // ⏳ ডাটা লোডিং স্টেট UI
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 px-4">
@@ -114,7 +110,6 @@ const ViewApplicants = () => {
     );
   }
 
-  // ⚠️ সার্ভার এরর স্টেট UI
   if (isError) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-2 text-rose-500 px-4 text-center">
@@ -130,7 +125,7 @@ const ViewApplicants = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 sm:space-y-8 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8"
+      className="space-y-6 sm:space-y-8 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 shadow-none py-4"
       style={{ fontFamily: "'League Spartan', sans-serif" }}
     >
       {/* Header */}
@@ -152,7 +147,7 @@ const ViewApplicants = () => {
         </Link>
       </div>
 
-      {/* 📜 Applicants Grid (ডাটাবেজ অবজেক্ট প্রোপার্টি বাইন্ডিং ফিক্সড) */}
+      {/* 📜 Applicants Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 w-full">
         {applicants && applicants.length > 0 ? (
           applicants.map((app) => (
@@ -190,8 +185,8 @@ const ViewApplicants = () => {
                     />
                   </div>
 
-                  <div className="min-w-0">
-                    <h3 className="text-lg sm:text-xl font-black text-slate-800 truncate">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base sm:text-lg font-black text-slate-800 truncate">
                       {app.tutorName || "Anonymous Tutor"}
                     </h3>
 
@@ -215,7 +210,7 @@ const ViewApplicants = () => {
 
                   <p className="flex items-center gap-1.5 min-w-0">
                     <Phone size={13} className="text-slate-400 shrink-0" />
-                    <span className="text-slate-600">
+                    <span className="text-slate-600 truncate">
                       {app.tutorPhone || "Hidden on Log"}
                     </span>
                   </p>
@@ -227,13 +222,13 @@ const ViewApplicants = () => {
                     <FileText size={12} />
                     Tutor's Proposal Statement
                   </p>
-                  <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed break-words">
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed break-words">
                     {app.proposal || "No cover letter submitted by the tutor."}
                   </p>
                 </div>
               </div>
 
-              {/* Action Buttons (পেন্ডিং বা স্ট্যাটাস না থাকলেই কেবল দেখা যাবে) */}
+              {/* Action Buttons */}
               {(app.status === "pending" || !app.status) && (
                 <div className="flex flex-col sm:flex-row gap-2.5 border-t border-slate-50/80 pt-4 mt-2 w-full">
                   {/* Accept & Pay */}
@@ -256,9 +251,9 @@ const ViewApplicants = () => {
                     <span>Accept & Pay Securely</span>
                   </button>
 
-                  {/* Reject */}
+                  {/* Reject (পাসিং ভ্যালু ফিক্সড) */}
                   <button
-                    onClick={() => rejectMutation.mutate({ tutorId: app.tutorId })}
+                    onClick={() => rejectMutation.mutate({ tutorEmail: app.tutorEmail })}
                     disabled={checkoutMutation.isPending || rejectMutation.isPending}
                     className="w-full sm:w-28 h-11 bg-rose-50 text-rose-500 rounded-xl font-black text-xs hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-rose-100 disabled:opacity-50 active:scale-95"
                   >
@@ -274,7 +269,6 @@ const ViewApplicants = () => {
             </div>
           ))
         ) : (
-          /* নো ডাটা এলার্ট গেটওয়ে */
           <div className="col-span-full text-center py-20 bg-white rounded-[2.5rem] sm:rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 px-4">
             <AlertTriangle size={36} className="text-slate-300" />
             <p className="font-black text-slate-300 uppercase tracking-widest text-xs sm:text-sm">

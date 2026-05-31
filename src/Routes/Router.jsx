@@ -27,6 +27,7 @@ import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
 import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
 import PaymentSuccess from "../pages/Dashboard/PaymentSuccess/PaymentSuccess";
 import ReportsAnalytics from "../pages/Dashboard/Admin/ReportsAnalytics";
+import MyBookmarks from "../pages/MyBookmarks/MyBookmarks";
 // import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <DashboardIndex></DashboardIndex>,
+      },
+      {
+        path: "my-bookmarks",
+        element: <MyBookmarks></MyBookmarks>,
       },
       {
         path: "profile-settings",
