@@ -26,6 +26,7 @@ import ManageTuitions from "../pages/Dashboard/Admin/ManageTuitions";
 import ViewApplicants from "../pages/Dashboard/Students/ViewApplicants";
 import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
 import PaymentSuccess from "../pages/Dashboard/PaymentSuccess/PaymentSuccess";
+import ReportsAnalytics from "../pages/Dashboard/Admin/ReportsAnalytics";
 // import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
@@ -155,6 +156,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/manage-tuitions",
         element: <ManageTuitions></ManageTuitions>,
+      },
+      {
+        path: "admin/reports-analytics",
+        element: <ReportsAnalytics></ReportsAnalytics>,
       },
     ],
   },

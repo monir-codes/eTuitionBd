@@ -88,7 +88,7 @@ const TuitionDetails = () => {
     }
 
     const payload = {
-      _id: id,
+      tuitionId: id,
       tutorId: user.uid,
       tuitionTitle: job.title,
       tuitionClassLevel: job.classLevel,

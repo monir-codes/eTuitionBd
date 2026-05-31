@@ -97,7 +97,7 @@ const ProfileSettings = () => {
     const toastId = toast.loading("Updating password credentials...");
     
     try {
-      console.log("Changing Password to:", data.newPassword);
+      // console.log("Changing Password to:", data.newPassword);
       // এখানে আপনার ফায়ারবেস বা ব্যাকএন্ড পাসওয়ার্ড আপডেট এপিআই কলটি বসাতে পারেন
       
       toast.update(toastId, { 

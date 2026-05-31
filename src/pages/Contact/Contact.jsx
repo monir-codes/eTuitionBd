@@ -7,7 +7,7 @@ const Contact = () => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
   const onSubmit = (data) => {
-    console.log("Contact Form Data:", data);
+    // console.log("Contact Form Data:", data);
     toast.success("Message sent successfully! eTuitionBD team will contact you soon.");
     reset(); 
   };

@@ -15,6 +15,7 @@ import {
   Settings,
   BookCheck,
   CircleUserRound,
+  BarChart3,
 } from "lucide-react";
 import { BiHome } from "react-icons/bi";
 import useAuth from "../../hooks/useAuth";
@@ -34,18 +35,17 @@ const DashboardLayout = () => {
   }
 
   // 🚀 ২. রিয়েল-টাইম রোল ডিটেকশন (admin, tutor, student)
-  const {data: role = []} = useQuery({
+  const { data: role = [] } = useQuery({
     queryKey: ["role", user?.email],
-    queryFn: async()=>{
-      const res = await axiosSecure.get(`/api/user?email=${user?.email}`)
-      return res.data.role
-    }
-  })
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/api/user?email=${user?.email}`);
+      return res.data.role;
+    },
+  });
 
   if (!role) {
-    return <Loading />; 
+    return <Loading />;
   }
-
 
   const handleLogout = () => {
     logOut().then(() => {
@@ -75,6 +75,11 @@ const DashboardLayout = () => {
         path: "admin/manage-users",
         label: "Manage Users",
         icon: <CircleUserRound size={20} />,
+      },
+      {
+        path: "admin/reports-analytics", 
+        label: "Reports & Analytics", 
+        icon: <BarChart3 size={20} />, 
       },
     ],
     tutor: [
@@ -226,13 +231,15 @@ const DashboardLayout = () => {
           >
             <div className="space-y-12">
               <div className="flex items-center gap-8 mb-6">
-
-              <span className="text-2xl font-black tracking-tighter text-white block pl-4">
-                eTuitionBD
-              </span>
-              <Link to="/" className="w-full bg-gray-800 p-2 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors cursor-pointer">
-                 <BiHome size={20} />
-              </Link>
+                <span className="text-2xl font-black tracking-tighter text-white block pl-4">
+                  eTuitionBD
+                </span>
+                <Link
+                  to="/"
+                  className="w-full bg-gray-800 p-2 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors cursor-pointer"
+                >
+                  <BiHome size={20} />
+                </Link>
               </div>
               <nav className="space-y-2">
                 {roleMenu.map((item, idx) => (

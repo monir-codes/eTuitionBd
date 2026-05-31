@@ -83,7 +83,7 @@ const Register = () => {
       };
 
       const serverRes = await axiosSecure.post('/api/users', backendUserData);
-      console.log("Server Response:", serverRes.data);
+      // console.log("Server Response:", serverRes.data);
 
       const finalUserData = {
         ...newUser,

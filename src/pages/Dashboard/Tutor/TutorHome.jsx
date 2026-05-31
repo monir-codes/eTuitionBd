@@ -48,7 +48,7 @@ const TutorHome = () => {
         bio: data.bio,
       };
 
-      console.log("Saving to MongoDB:", updatedTutorData);
+      // console.log("Saving to MongoDB:", updatedTutorData);
       await axiosSecure.patch(`/api/user?email=${user.email}`, updatedTutorData);
       
 
