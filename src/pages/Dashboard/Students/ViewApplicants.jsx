@@ -16,6 +16,7 @@ import {
 import useAxios from "../../../hooks/useAxios";
 import { toast } from "react-toastify";
 import useAuth from "../../../hooks/useAuth";
+import axios from "axios";
 
 const ViewApplicants = () => {
   const { id } = useParams(); // tuitionId
@@ -23,7 +24,6 @@ const ViewApplicants = () => {
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
 
-  // ✅ ১. TanStack Query: আবেদনকারী টিউটরদের লিস্ট ফেচ করা (ইன்பিনিট লুপ ফিক্সড)
   const {
     data: applicants = [],
     isLoading,
@@ -42,8 +42,14 @@ const ViewApplicants = () => {
   const rejectMutation = useMutation({
     mutationFn: async ({ tutorEmail }) => {
       // 🎯 ফিক্স: tutorId এর জায়গায় tutorEmail পাঠানো হচ্ছে ব্যাকএন্ড ডিমান্ড অনুযায়ী
-      const res = await axiosSecure.patch(`/api/tuitions/application-status?tuitionId=${id}&tutorEmail=${tutorEmail}`, {
-        status: "rejected",
+      const res = await fetch(`http://localhost:3000/api/tuitions/application-status?tuitionId=${id}&tutorEmail=${tutorEmail}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "rejected",
+        }),
       });
 
       if (!res.data.success) {
