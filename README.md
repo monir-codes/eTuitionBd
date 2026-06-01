@@ -49,5 +49,5 @@ Follow these precise steps to provision a local node instances of eTuitionBD:
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/your-username/etuitionbd.git](https://github.com/your-username/etuitionbd.git)
+git clone [https://github.com/monir-codes/etuitionbd.git](https://github.com/monir-codes/etuitionbd.git)
 cd etuitionbd
