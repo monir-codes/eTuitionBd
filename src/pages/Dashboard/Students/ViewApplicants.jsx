@@ -1,289 +1,150 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   X,
-  Mail,
-  Phone,
-  GraduationCap,
   Loader2,
   AlertTriangle,
-  FileText,
   ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  FileText,
 } from "lucide-react";
 import useAxios from "../../../hooks/useAxios";
 import { toast } from "react-toastify";
 import useAuth from "../../../hooks/useAuth";
-import axios from "axios";
 
 const ViewApplicants = () => {
-  const { id } = useParams(); // tuitionId
+  const { id } = useParams();
+  console.log("URL থেকে পাওয়া আইডি:", id);
   const { user } = useAuth();
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
 
-  const {
-    data: applicants = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data: applicants = [], isLoading } = useQuery({
     queryKey: ["applicants", id],
-    enabled: !!id,
     queryFn: async () => {
       const res = await axiosSecure.get(`/api/tuitions/applicants/${id}`);
+      console.log("Applicants Data Received:", res.data); // ডাটা কনসোলে দেখুন
       return res.data;
     },
   });
 
-  // ✅ ২. Reject Mutation (ব্যাকএন্ডের ইমেইল কুয়েরির সাথে ১০০% সিঙ্কড)
+  // রিজেক্ট মিউটেশন (সঠিক কুয়েরি প্যারামিটারে tutorId পাস করা)
   const rejectMutation = useMutation({
-    mutationFn: async ({ tutorEmail }) => {
-      // 🎯 ফিক্স: tutorId এর জায়গায় tutorEmail পাঠানো হচ্ছে ব্যাকএন্ড ডিমান্ড অনুযায়ী
-      const res = await fetch(`http://localhost:3000/api/tuitions/application-status?tuitionId=${id}&tutorEmail=${tutorEmail}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "rejected",
-        }),
-      });
+    mutationFn: async (tutorId) => {
+      // এখানে URL টি চেক করুন:
+      const url = `/api/tuitions/application-status?tuitionId=${id}&tutorId=${tutorId}`;
 
-      if (!res.data.success) {
-        throw new Error(res.data.message || "Failed to reject application.");
-      }
-      return res.data;
+      // axiosSecure ব্যবহার করার সময় body-তে শুধু status টি পাঠাচ্ছেন
+      return await axiosSecure.patch(url, { status: "rejected" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applicants", id] });
-      toast.error("Tutor proposal rejected successfully.");
+      toast.error("Application rejected successfully.");
     },
     onError: (err) => {
-      console.error(err);
-      toast.error(err?.response?.data?.message || err?.message || "Failed to reject application.");
+      console.error("Reject Error:", err.response?.data);
+      toast.error("Failed to reject: " + err.response?.data?.message);
     },
   });
 
-  // ✅ ৩. Checkout Mutation (স্ট্রাইপ হোস্টেড ফর্ম সেশন তৈরি)
+  // পেমেন্ট চেকআউট মিউটেশন
   const checkoutMutation = useMutation({
     mutationFn: async ({ tutorId, tuitionTitle, price }) => {
       const res = await axiosSecure.post("/api/create-checkout-session", {
-        price: Number(price) || 5000,
+        price: Number(price.replace(/[^0-9.]/g, "")),
         tuitionTitle,
         tuitionId: id,
         tutorId,
         studentEmail: user?.email,
-        studentName: user?.displayName,
       });
-
-      if (!res.data?.url) {
-        throw new Error("Failed to create payment session.");
-      }
       return res.data;
     },
-    onSuccess: (data) => {
-      toast.info("Redirecting to Stripe Secure Gateway...");
-      window.location.href = data.url; 
-    },
-    onError: (err) => {
-      console.error(err);
-      toast.error(err?.response?.data?.message || err?.message || "Gateway communication failed.");
-    },
+    onSuccess: (data) => (window.location.href = data.url),
   });
 
-  // ✅ Accept Handler
-  const handleAcceptClick = (tutorId, tuitionTitle, salary) => {
-    const cleanPrice = typeof salary === "string" ? salary.replace(/[^0-9.]/g, "") : salary;
-
-    checkoutMutation.mutate({
-      tutorId,
-      tuitionTitle: tuitionTitle || "Tuition Matching Secure Escrow",
-      price: cleanPrice || 5000,
-    });
-  };
-
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 px-4">
-        <Loader2 className="animate-spin text-[#40bfff]" size={40} />
-        <p className="text-slate-400 font-bold text-sm uppercase tracking-widest text-center">
-          Loading Applied Tutors...
-        </p>
+      <div className="p-20 text-center">
+        <Loader2 className="animate-spin mx-auto" size={40} />
       </div>
     );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-2 text-rose-500 px-4 text-center">
-        <AlertTriangle size={40} />
-        <p className="font-black uppercase tracking-wider">
-          Sync Error: {error.message}
-        </p>
-      </div>
-    );
-  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 sm:space-y-8 w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 shadow-none py-4"
-      style={{ fontFamily: "'League Spartan', sans-serif" }}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100/60 pb-5">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-800 mb-1 leading-tight">
-            Tutor Applications
-          </h1>
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs">
-            Review proposals, check profiles, and hire the perfect tutor
-          </p>
-        </div>
-
-        <Link to="/dashboard/student/my-posts">
-          <button className="inline-flex items-center gap-2 text-slate-500 font-black hover:text-[#40bfff] transition-colors uppercase tracking-widest text-[10px] sm:text-xs">
-            <ArrowLeft size={14} />
-            My Circulars
-          </button>
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-black">
+          Applicants ({applicants.length})
+        </h1>
+        <Link
+          to="/dashboard/student/my-posts"
+          className="flex items-center gap-2 text-slate-500 font-bold"
+        >
+          <ArrowLeft size={16} /> Back
         </Link>
       </div>
 
-      {/* 📜 Applicants Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 w-full">
-        {applicants && applicants.length > 0 ? (
-          applicants.map((app) => (
-            <div
-              key={app._id || app.tutorId}
-              className={`bg-white p-5 sm:p-6 lg:p-8 rounded-[2.5rem] sm:rounded-[3rem] border transition-all flex flex-col justify-between gap-5 relative overflow-hidden ${
-                app.status === "accepted" || app.status === "approved"
-                  ? "border-emerald-200 shadow-lg shadow-emerald-100/20 bg-emerald-50/5"
-                  : app.status === "rejected"
-                  ? "border-rose-100/70 bg-rose-50/5 opacity-75"
-                  : "border-slate-100 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.02)] hover:shadow-xl hover:shadow-blue-100/20"
-              }`}
-            >
-              {/* Status Badges */}
-              {(app.status === "accepted" || app.status === "approved") && (
-                <span className="absolute top-5 right-6 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                  Approved / Hired
-                </span>
-              )}
-
-              {app.status === "rejected" && (
-                <span className="absolute top-5 right-6 bg-rose-50 text-rose-500 border border-rose-100 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-                  Rejected
-                </span>
-              )}
-
-              {/* Profile Content */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 min-w-0 pr-24">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-100 bg-slate-50 shrink-0">
-                    <img
-                      src={app.tutorImage || "https://i.ibb.co/default-avatar.png"}
-                      className="w-full h-full object-cover"
-                      alt="Tutor"
-                    />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base sm:text-lg font-black text-slate-800 truncate">
-                      {app.tutorName || "Anonymous Tutor"}
-                    </h3>
-
-                    <p className="text-[11px] sm:text-xs text-[#40bfff] font-black flex items-center gap-1 mt-0.5 uppercase tracking-wider truncate">
-                      <GraduationCap size={13} className="shrink-0" />
-                      <span className="truncate">
-                        {app.tutorInstitution || "Expert Varsity Mentor"}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                {/* Contact Information */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-slate-500 pt-1 border-y border-slate-50 py-3 w-full">
-                  <p className="flex items-center gap-1.5 min-w-0">
-                    <Mail size={13} className="text-slate-400 shrink-0" />
-                    <span className="truncate text-slate-600">
-                      {app.tutorEmail}
-                    </span>
-                  </p>
-
-                  <p className="flex items-center gap-1.5 min-w-0">
-                    <Phone size={13} className="text-slate-400 shrink-0" />
-                    <span className="text-slate-600 truncate">
-                      {app.tutorPhone || "Hidden on Log"}
-                    </span>
-                  </p>
-                </div>
-
-                {/* Proposal Section */}
-                <div className="bg-slate-50/80 p-4 rounded-2xl space-y-1 border border-slate-100/50 w-full">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                    <FileText size={12} />
-                    Tutor's Proposal Statement
-                  </p>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed break-words">
-                    {app.proposal || "No cover letter submitted by the tutor."}
-                  </p>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {applicants.map((app) => (
+          <div
+            key={app._id}
+            className={`p-6 rounded-3xl border ${app.status === "rejected" ? "opacity-60 bg-slate-50" : "bg-white"}`}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={app.tutorImage}
+                className="w-16 h-16 rounded-2xl object-cover"
+              />
+              <div>
+                <h3 className="font-black text-lg">{app.tutorName}</h3>
+                <p className="text-xs text-slate-400 font-bold">
+                  {app.tutorEmail}
+                </p>
               </div>
-
-              {/* Action Buttons */}
-              {(app.status === "pending" || !app.status) && (
-                <div className="flex flex-col sm:flex-row gap-2.5 border-t border-slate-50/80 pt-4 mt-2 w-full">
-                  {/* Accept & Pay */}
-                  <button
-                    onClick={() =>
-                      handleAcceptClick(
-                        app.tutorId,
-                        app.tuitionTitle || "Tuition Matching Secure Fee",
-                        app.tuitionSalary || 5000
-                      )
-                    }
-                    disabled={checkoutMutation.isPending || rejectMutation.isPending}
-                    className="w-full sm:flex-1 h-11 bg-emerald-50 text-emerald-600 rounded-xl font-black text-xs hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-emerald-100 disabled:opacity-50 shadow-sm active:scale-95"
-                  >
-                    {checkoutMutation.isPending ? (
-                      <Loader2 className="animate-spin" size={14} />
-                    ) : (
-                      <Check size={14} />
-                    )}
-                    <span>Accept & Pay Securely</span>
-                  </button>
-
-                  {/* Reject (পাসিং ভ্যালু ফিক্সড) */}
-                  <button
-                    onClick={() => rejectMutation.mutate({ tutorEmail: app.tutorEmail })}
-                    disabled={checkoutMutation.isPending || rejectMutation.isPending}
-                    className="w-full sm:w-28 h-11 bg-rose-50 text-rose-500 rounded-xl font-black text-xs hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-1.5 border border-rose-100 disabled:opacity-50 active:scale-95"
-                  >
-                    {rejectMutation.isPending ? (
-                      <Loader2 className="animate-spin" size={14} />
-                    ) : (
-                      <X size={14} />
-                    )}
-                    <span>Reject</span>
-                  </button>
-                </div>
-              )}
             </div>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-20 bg-white rounded-[2.5rem] sm:rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 px-4">
-            <AlertTriangle size={36} className="text-slate-300" />
-            <p className="font-black text-slate-300 uppercase tracking-widest text-xs sm:text-sm">
-              No tutors have applied to this post yet
+            <p className="text-sm bg-slate-100 p-4 rounded-xl mb-4">
+              {app.proposal}
             </p>
+
+            {app.status === "pending" ? (
+              <div className="flex gap-3">
+                <button
+                  onClick={() =>
+                    checkoutMutation.mutate({
+                      tutorId: app.tutorId,
+                      tuitionTitle: app.tuitionTitle,
+                      price: app.tuitionSalary,
+                    })
+                  }
+                  className="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-black text-xs hover:bg-emerald-600 transition-all"
+                >
+                  {checkoutMutation.isPending ? (
+                    <Loader2 className="animate-spin mx-auto" size={16} />
+                  ) : (
+                    "Accept & Pay"
+                  )}
+                </button>
+                <button
+                  onClick={() => rejectMutation.mutate(app.tutorId)}
+                  className="flex-1 bg-rose-500 text-white py-3 rounded-xl font-black text-xs hover:bg-rose-600 transition-all"
+                >
+                  Reject
+                </button>
+              </div>
+            ) : (
+              <span
+                className={`px-3 py-1 text-[10px] font-black uppercase rounded-full ${app.status === "rejected" ? "bg-rose-100 text-rose-600" : "bg-emerald-100 text-emerald-600"}`}
+              >
+                {app.status}
+              </span>
+            )}
           </div>
-        )}
+        ))}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

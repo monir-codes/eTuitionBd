@@ -28,6 +28,8 @@ import TuitionDetails from "../pages/TuitionDetails/TuitionDetails";
 import PaymentSuccess from "../pages/Dashboard/PaymentSuccess/PaymentSuccess";
 import ReportsAnalytics from "../pages/Dashboard/Admin/ReportsAnalytics";
 import MyBookmarks from "../pages/MyBookmarks/MyBookmarks";
+import OperationalLogs from "../pages/Dashboard/Admin/OperationalLogs";
+import Notices from "../pages/Notices/Notices";
 // import SingleTuitionDetails from "../pages/SingleTuitionDetails/SingleTuitionDetails";
 
 export const router = createBrowserRouter([
@@ -71,6 +73,10 @@ export const router = createBrowserRouter([
       //   path: "/checkout",
       //   element: <CheckoutForm></CheckoutForm>,
       // },
+      {
+        path: "/blogs",
+        Component: Notices
+      }
     ],
   },
   {
@@ -165,6 +171,10 @@ export const router = createBrowserRouter([
       {
         path: "admin/reports-analytics",
         element: <ReportsAnalytics></ReportsAnalytics>,
+      },
+      {
+        path: "admin/operational-logs",
+        element: <OperationalLogs></OperationalLogs>,
       },
     ],
   },

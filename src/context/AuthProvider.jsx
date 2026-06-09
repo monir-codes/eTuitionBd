@@ -19,10 +19,10 @@ const AuthProvider = ({children}) => {
 
      const logOut = ()=>{
         return signOut(auth).then(
-            console.log('logged out')
+            // console.log('logged out')
             
-        ).catch(err=> 
-            console.log(err)
+        ).catch( 
+            // console.log(err)
         )
      };
 
@@ -30,7 +30,7 @@ const AuthProvider = ({children}) => {
         return updateProfile(auth.currentUser,{
         displayName: name, photoURL: url
         }).then(()=>{
-            console.log('Profile successfully updated')
+            // console.log('Profile successfully updated')
         }).catch((err)=>{
             console.log(err)
         })
@@ -40,30 +40,42 @@ const AuthProvider = ({children}) => {
         return signInWithPopup(auth, googleProvider)
      }
 
-     useEffect(()=>{
-         const unSubscribe = onAuthStateChanged(auth, (currentUser)=>{
-            setLoading(true)
-            // console.log(currentUser)
-            setUser(currentUser)
-            if(currentUser){
-                const loggedUser = {email: currentUser.email}
-                fetch('http://localhost:3000/get-token',{
-                    method: 'POST',
-                    headers: {'content-type': 'application/json'},
-                    body: JSON.stringify(loggedUser)
-                }).then(res=> res.json())
-                .then(data=>{
-                    // console.log(data)
-                    localStorage.setItem('access-token', data.token)
-                })
-            }else{
-                localStorage.removeItem('access-token')
-            }
-            setLoading(false)
-        })
+   useEffect(() => {
+  const unSubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    setLoading(true);
 
-        return ()=> unSubscribe
-     },[])
+    setUser(currentUser);
+
+    if (currentUser) {
+      try {
+        const res = await fetch(
+          "https://etuitionbd-server-dusky.vercel.app/get-token",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              email: currentUser.email,
+            }),
+          }
+        );
+
+        const data = await res.json();
+
+        localStorage.setItem("access-token", data.token);
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      localStorage.removeItem("access-token");
+    }
+
+    setLoading(false);
+  });
+
+  return () => unSubscribe();
+}, []);
 
     const authInfo = {
         user,

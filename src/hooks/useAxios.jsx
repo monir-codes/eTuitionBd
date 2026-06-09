@@ -2,12 +2,13 @@ import axios from "axios";
 import { useEffect } from "react";
 import useAuth from "./useAuth";
 
+// https://etuitionbd-server-dusky.vercel.app
 const axiosSecure = axios.create({
-  baseURL: "https://etuitionbd-server-dusky.vercel.app",
+  baseURL: "http://localhost:3000",
 });
 
 const useAxios = () => {
-  const {  logOut } = useAuth();
+  const { logOut } = useAuth();
 
   useEffect(() => {
     // Request Interceptor
@@ -21,7 +22,7 @@ const useAxios = () => {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Response Interceptor
@@ -31,11 +32,11 @@ const useAxios = () => {
         const status = error.response?.status;
 
         if (status === 401 || status === 403) {
-          await logOut();
+          // await logOut();
         }
 
         return Promise.reject(error);
-      }
+      },
     );
 
     // Cleanup

@@ -29,16 +29,16 @@ const Footer = () => {
           
           {/* Social Media - Requirement: New X Logo */}
           <div className="flex gap-4">
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
+            <a href="https://www.facebook.com/LearnWithMoniruzzaman" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
               <FaFacebook size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
+            <a href="https://x.com/mondal_rumman" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
               <FontAwesomeIcon icon={faXTwitter} size="lg" />
             </a>
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
+            <a href="https://www.linkedin.com/in/moniruzzaman-rumman/" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
               <FaLinkedinIn size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
+            <a href="https://www.instagram.com/learn_with_moniruzzaman" className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-[#40bfff] hover:text-white transition-all shadow-sm">
               <FaInstagram size={18} />
             </a>
           </div>

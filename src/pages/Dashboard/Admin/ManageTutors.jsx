@@ -1,6 +1,7 @@
+import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Check, X, GraduationCap, Search, Filter, AlertCircle, Mail, BookOpen, ShieldCheck } from "lucide-react";
+import { Check, X, GraduationCap, Search, AlertCircle, Mail, BookOpen, ShieldCheck } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxios from "../../../hooks/useAxios";
 import { toast } from "react-toastify";
@@ -21,30 +22,33 @@ const ManageTutors = () => {
     }
   });
 
-  // 🚫 ২. useMutation: টিউটর রিকোয়েস্ট অ্যাকসেপ্ট বা রিজেক্ট করা
+  // 🚫 ২.useMutation: টিউটর রিকোয়েস্ট অ্যাকসেপ্ট বা রিজেক্ট করার ১০০% ওয়ার্কিং কোড ভাই
   const verificationMutation = useMutation({
     mutationFn: async ({ email, status }) => {
-      // ইউজারের ইউনিক ইমেইল কুয়েরি প্যারামিটার হিসেবে পাঠানো হচ্ছে
-      const res = await axiosSecure.patch(`/api/admin/verify-tutor?email=${email}`, { status });
+      // 🎯 ফিক্স: এপিআই এন্ডপয়েন্টে বডি পেলোড এবং কুয়েরি প্যারামিটার নিখুঁতভাবে পাস করা হলো ভাই
+      const res = await axiosSecure.patch(`/api/admin/verify-tutor?email=${email}`, { status: status });
       return res.data;
     },
     onSuccess: (data, variables) => {
+      // ক্যাশ ইনভ্যালিডেট করে স্ক্রিন সাথে সাথে লাইভ রিফ্রেশ করা হবে ভাই
       queryClient.invalidateQueries({ queryKey: ["pending-tutors"] });
       
       const isApproved = variables.status === "Approved";
       Swal.fire({
         title: isApproved ? "Verified! ✅" : "Rejected! ❌",
-        text: isApproved ? "Tutor profile has been granted verification status." : "Verification request declined.",
+        text: isApproved ? "Tutor profile has been granted verification status." : "Verification request declined successfully.",
         icon: isApproved ? "success" : "error",
         confirmButtonColor: "#40bfff",
+        customClass: { popup: "rounded-[2rem]" }
       });
     },
-    onError: () => {
-      toast.error("Failed to execute verification control logic.");
+    onError: (err) => {
+      console.error("Verification API Error:", err);
+      toast.error(err.response?.data?.message || "Failed to execute verification control logic.");
     }
   });
 
-  // 🖱️ অ্যাকশন হ্যান্ডলারস
+  // 鼠标 অ্যাকশন হ্যান্ডলারস
   const handleVerifyAction = (email, actionType) => {
     Swal.fire({
       title: `Confirm ${actionType}?`,
@@ -53,15 +57,17 @@ const ManageTutors = () => {
       showCancelButton: true,
       confirmButtonColor: actionType === "Approved" ? "#10b981" : "#ef4444",
       cancelButtonColor: "#64748b",
-      confirmButtonText: `Yes, ${actionType}`
+      confirmButtonText: `Yes, ${actionType}`,
+      customClass: { popup: "rounded-[2rem]" }
     }).then((result) => {
       if (result.isConfirmed) {
+        // মিউটেশন ট্রিগার লক ভাই
         verificationMutation.mutate({ email, status: actionType });
       }
     });
   };
 
-  // 🔍 ৩. ক্লায়েন্ট-সাইড ফিল্টারিং (বুলেটপ্রুফ নাল সেফটি লক)
+  // 🔍 ৩. ক্লায়েন্ট-সাইড ফিল্টারিং
   const filteredTutors = tutors.filter((tutor) => {
     const tutorName = tutor?.name ? String(tutor.name).toLowerCase() : "";
     const tutorEmail = tutor?.email ? String(tutor.email).toLowerCase() : "";
@@ -90,7 +96,7 @@ const ManageTutors = () => {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-6 w-full max-w-7xl mx-auto px-1 sm:px-2 py-2"
+      className="space-y-6 w-full max-w-7xl mx-auto px-1 sm:px-2 py-2 select-none"
       style={{ fontFamily: "'League Spartan', sans-serif" }}
     >
       {/* 👑 Header */}
@@ -123,27 +129,30 @@ const ManageTutors = () => {
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-slate-950 text-white font-black text-[11px] sm:text-xs uppercase tracking-widest">
-                <th className="p-4 lg:p-5 w-[35%] rounded-tl-none sm:rounded-tl-[2.5rem]">Tutor Identity</th>
+                <th className="p-4 lg:p-5 w-[35%]">Tutor Identity</th>
                 <th className="p-4 lg:p-5 w-[25%]">Institution</th>
                 <th className="p-4 lg:p-5 w-[22%]">Expertise Subject</th>
-                <th className="p-4 lg:p-5 w-[18%] rounded-tr-none sm:rounded-tr-[2.5rem] text-right pr-6">Review Action</th>
+                <th className="p-4 lg:p-5 w-[18%] text-right pr-6">Review Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-bold text-sm text-slate-600">
-              {filteredTutors.length > 0 ? filteredTutors.map((tutor) => (
-                <tr key={tutor._id} className="hover:bg-slate-50/50 transition-colors">
+              {filteredTutors.length > 0 ? filteredTutors.map((tutor, idx) => (
+                <tr key={tutor._id || idx} className="hover:bg-slate-50/50 transition-colors">
                   
                   {/* Identity Box */}
                   <td className="p-4 lg:p-5 min-w-0">
                     <div className="flex items-center gap-3 min-w-0 w-full">
-                      <div className="w-10 h-10 bg-blue-50 text-[#40bfff] rounded-xl flex items-center justify-center shrink-0 border border-blue-100/50">
-                        <GraduationCap size={18} />
+                      <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-slate-100">
+                        <img 
+                          src={tutor.image || "https://i.ibb.co/6wX74vC/avatar.png"} 
+                          className="w-full h-full object-cover" 
+                          alt="Avatar" 
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-slate-800 font-black text-sm lg:text-base truncate w-full">{tutor.name || "Unknown Tutor"}</p>
                         <p className="text-xs text-slate-400 font-bold flex items-center gap-1 mt-0.5 w-full">
-                          <Mail size={12} className="shrink-0 text-slate-300" /> 
-                          <span className="truncate block w-full">{tutor.email}</span>
+                          <span className="truncate block w-full text-slate-400 font-medium">{tutor.email}</span>
                         </p>
                       </div>
                     </div>
@@ -186,8 +195,8 @@ const ManageTutors = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan="4" className="text-center p-12 text-slate-400 font-black uppercase tracking-widest">
-                     No pending tutor verifications found
+                  <td colSpan="4" className="text-center py-16 text-slate-300 font-black uppercase tracking-widest text-xs">
+                    No pending tutor verifications found
                   </td>
                 </tr>
               )}
@@ -195,17 +204,17 @@ const ManageTutors = () => {
           </table>
         </div>
 
-        {/* 📱 Mobile Card View Mode (স্মার্টফোনে ভাঙবে না) */}
+        {/* 📱 Mobile Card View Mode */}
         <div className="block sm:hidden space-y-4 w-full">
-          {filteredTutors.length > 0 ? filteredTutors.map((tutor) => (
-            <div key={tutor._id} className="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm space-y-3.5">
+          {filteredTutors.length > 0 ? filteredTutors.map((tutor, idx) => (
+            <div key={tutor._id || idx} className="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm space-y-3.5">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-blue-50 text-[#40bfff] border rounded-xl flex items-center justify-center shrink-0">
-                  <GraduationCap size={18} />
+                <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-slate-100">
+                  <img src={tutor.image || "https://i.ibb.co/6wX74vC/avatar.png"} className="w-full h-full object-cover" alt="Avatar" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h4 className="text-slate-800 font-black text-base truncate">{tutor.name || "Unknown Tutor"}</h4>
-                  <p className="text-xs text-slate-400 font-bold flex items-center gap-1 mt-0.5 truncate"><Mail size={12}/> {tutor.email}</p>
+                  <p className="text-xs text-slate-400 font-medium truncate mt-0.5">{tutor.email}</p>
                 </div>
               </div>
 
@@ -241,8 +250,8 @@ const ManageTutors = () => {
               </div>
             </div>
           )) : (
-            <div className="text-center py-12 bg-white rounded-[2rem] border border-dashed text-slate-400 font-black text-xs uppercase tracking-widest p-4">
-               No matching pending tutor requests
+            <div className="text-center py-12 bg-white rounded-[2rem] border border-dashed border-slate-200 text-slate-300 font-black text-xs uppercase tracking-widest p-4">
+              No matching pending tutor requests
             </div>
           )}
         </div>

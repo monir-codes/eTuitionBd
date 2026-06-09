@@ -8,6 +8,10 @@ import {
   ShieldCheck,
   Zap,
   Loader2,
+  GraduationCap,
+  UserCheck,
+  Eye,      // 🚀 পাসওয়ার্ড ভিজিবিলিটি ইঞ্জিনের জন্য ইম্পোর্ট ভাই
+  EyeOff    // 🚀 পাসওয়ার্ড ভিজিবিলিটি ইঞ্জিনের জন্য ইম্পোর্ট ভাই
 } from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
 import { toast } from "react-toastify";
@@ -20,20 +24,22 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    setValue, 
     formState: { errors },
   } = useForm();
   const location = useLocation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // ⚡ পাসওয়ার্ড শো/হাইড স্টেট কন্ট্রোলার ভাই
   const axiosSecure = useAxios();
 
   const from = location?.state?.from?.pathname || "/dashboard";
 
-  // 🤝 সেশন এবং রোল মার্জিং লজিক (গুগল এবং ম্যানুয়াল উভয়ের জন্য কমন প্রবেশদ্বার)
+  // 🤝 সেশন এবং রোল মার্জিং লজিক
   const handleUserSession = async (firebaseUser, toastId) => {
     try {
       const response = await axiosSecure.get(
-        `/api/users/${firebaseUser.email}`,
+        `/api/user?email=${firebaseUser.email}`,
       );
       const dbUser = response.data;
 
@@ -42,7 +48,7 @@ const Login = () => {
         email: firebaseUser.email,
         displayName: firebaseUser.displayName || dbUser.name,
         photoURL: firebaseUser.photoURL || dbUser.image,
-        role: dbUser.role || "student", // ডাটাবেজে রোল থাকলে সেটাই নিবে
+        role: dbUser.role || "student", 
       };
 
       setUser(finalUserData);
@@ -56,7 +62,6 @@ const Login = () => {
 
       navigate(from, { replace: true });
     } catch (err) {
-      // যদি ডাটাবেজে কোনো কারণে ইউজার না পাওয়া যায় (ফলব্যাক এরর ক্যাচ)
       toast.update(toastId, {
         render: "Login Successful as Student!",
         type: "success",
@@ -68,7 +73,7 @@ const Login = () => {
     }
   };
 
-  // 📧 ম্যানুয়াল ইমেইল-পাসওয়ার্ড লগইন
+  // 📧 ম্যানুয়াল ইমেইল-পাসওয়ার্ড লগইন
   const onSubmit = async (data) => {
     setLoading(true);
     const toastId = toast.loading("Authenticating secure session...");
@@ -87,20 +92,17 @@ const Login = () => {
     }
   };
   
-  // 🌐 গুগল দিয়ে ডিরেক্ট স্টুডেন্ট রোলে লগইন ও সিঙ্ক
+  // 🌐 গুগল লগইন
   const handleGoogleLogin = async () => {
     const toastId = toast.loading("Connecting via Google...");
-
     try {
-      // ১. গুগলের পপআপ থেকে ফায়ারবেস রেসপন্স নেওয়া
       const result = await googleSignIn();
       const user = result.user;
 
-      // ২. ডিফল্ট রোল 'student' সহ আমাদের কাস্টম ডাটাবেজ পেলোড অবজেক্ট
       const userInfo = {
         name: user?.displayName,
         email: user?.email,
-        role: "student", // 🔥 নতুন ইউজারের জন্য ডিফল্ট রোল লকড
+        role: "student", 
         phone: "",
         image: user?.photoURL,
         createdAt: new Date().toLocaleString("en-US", {
@@ -112,22 +114,29 @@ const Login = () => {
         }),
       };
 
-      // 📡 ৩. ব্যাকএন্ড এপিআই-তে ডাটা পাঠানো (ইউজার নতুন হলে ইনসার্ট হবে, পুরাতন হলে স্কিপ হবে)
       await axiosSecure.post("/api/users", userInfo);
-
-      // 🚀 ৪. ডাটাবেজ সিঙ্ক শেষে সরাসরি সেশন হ্যান্ডলারে পাঠানো হলো (গ্যারান্টেড টোস্ট ক্লোজিং ও রিডাইরেক্ট)
       await handleUserSession(user, toastId);
-
     } catch (error) {
       console.error("Google Login Error Details:", error);
-      
-      // কোনো কারণে ফেইল হলে লোডিং স্পিনার থমকে এরর দেখাবে
       toast.update(toastId, {
         render: error?.response?.data?.message || "Google sign-in failed or cancelled.",
         type: "error",
         isLoading: false,
         autoClose: 3000,
       });
+    }
+  };
+
+  // 👑 ওয়ান-ক্লিক অটোফিল ক্রেডেনশিয়াল হ্যান্ডলার
+  const handleDemoLoginFill = (roleType) => {
+    if (roleType === "tutor") {
+      setValue("email", "demo@tutor.com"); 
+      setValue("password", "Monir@eTuitionBD");
+      toast.info("Tutor Demo Credentials Filled! 🎓");
+    } else if (roleType === "admin") {
+      setValue("email", "demo@admin.com"); 
+      setValue("password", "Monir@eTuitionBD");
+      toast.info("Admin Demo Credentials Filled! 👑");
     }
   };
 
@@ -229,10 +238,19 @@ const Login = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
                 <input
                   {...register("password", { required: "Password is required" })}
-                  type="password"
+                  type={showPassword ? "text" : "password"} // 🎯 ফিক্স: স্ট্যাটাস অনুযায়ী ইনপুট টাইপ ডাইনামিক লক ভাই
                   placeholder="Password"
-                  className={`w-full pl-12 pr-4 h-12 sm:h-14 bg-slate-50 border-none rounded-xl sm:rounded-2xl font-bold text-sm text-slate-700 placeholder-slate-400 focus:ring-2 outline-none transition-all ${errors.password ? "ring-2 ring-red-200" : "focus:ring-[#40bfff]/20"}`}
+                  className={`w-full pl-12 pr-12 h-12 sm:h-14 bg-slate-50 border-none rounded-xl sm:rounded-2xl font-bold text-sm text-slate-700 placeholder-slate-400 focus:ring-2 outline-none transition-all ${errors.password ? "ring-2 ring-red-200" : "focus:ring-[#40bfff]/20"}`}
                 />
+                
+                {/* 🎯 ফিক্স: পাসওয়ার্ড শো/হাইড করার স্লিক বাটন ইঞ্জিন ভাই */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none p-1"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               {errors.password && (
                 <p className="text-red-500 text-[11px] mt-1 ml-2 font-bold">
@@ -246,6 +264,24 @@ const Login = () => {
               <Link className="text-[9px] sm:text-[10px] font-black text-slate-400 hover:text-[#40bfff] uppercase tracking-widest hover:underline transition-colors">
                 Forgot Password?
               </Link>
+            </div>
+
+            {/* ডেমো লগইন প্যানেল */}
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => handleDemoLoginFill("tutor")}
+                className="h-11 bg-blue-50/60 border border-blue-100 text-slate-700 hover:bg-[#40bfff] hover:text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-[0.97]"
+              >
+                <GraduationCap size={15} /> Demo Tutor
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDemoLoginFill("admin")}
+                className="h-11 bg-purple-50/60 border border-purple-100 text-slate-700 hover:bg-purple-600 hover:text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-[0.97]"
+              >
+                <UserCheck size={15} /> Demo Admin
+              </button>
             </div>
 
             {/* Login Button */}

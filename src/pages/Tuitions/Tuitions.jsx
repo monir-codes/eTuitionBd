@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Search, MapPin, CircleDollarSign, Clock, BookOpen, ArrowRight, Loader2, AlertTriangle, GraduationCap, User, ChevronLeft, ChevronRight, RotateCcw, Bookmark } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom"; 
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "../../hooks/useAxios";
 import { toast } from "react-toastify";
@@ -10,17 +10,24 @@ import useAuth from "../../hooks/useAuth";
 const Tuitions = () => {
   const { user } = useAuth(); 
   const axiosSecure = useAxios();
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // ⚙️ ফিল্টার ও সর্ট স্টেট
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All"); 
-  const [filterClass, setFilterClass] = useState("All");       
-  const [filterSubject, setFilterSubject] = useState("All");   
-  const [filterLocation, setFilterLocation] = useState("All"); 
-  const [sortBy, setSortBy] = useState("date");                
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [filterCategory, setFilterCategory] = useState(searchParams.get("category") || "All"); 
+  const [filterClass, setFilterClass] = useState(searchParams.get("classLevel") || "All");       
+  const [filterSubject, setFilterSubject] = useState(searchParams.get("subject") || "All");   
+  const [filterLocation, setFilterLocation] = useState(searchParams.get("location") || "All"); 
+  const [sortBy, setSortBy] = useState("date");                               
   const [sortOrder, setSortOrder] = useState("desc");          
   
-  // 📄 পেজিনেশন স্টেট
+  useEffect(() => {
+    if (searchParams.has("search")) setSearchTerm(searchParams.get("search") || "");
+    if (searchParams.has("category")) setFilterCategory(searchParams.get("category") || "All");
+    if (searchParams.has("classLevel")) setFilterClass(searchParams.get("classLevel") || "All");
+    if (searchParams.has("subject")) setFilterSubject(searchParams.get("subject") || "All");
+  }, [searchParams]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
@@ -62,6 +69,7 @@ const Tuitions = () => {
     setSortBy("date");
     setSortOrder("desc");
     setCurrentPage(1);
+    setSearchParams({});
   };
 
   const handleAddBookmark = async (id) => {
@@ -92,10 +100,8 @@ const Tuitions = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* 🔍 Search & Advanced Filter Controller Box (Responsive Layout) */}
+        {/* 🔍 Filter Controls */}
         <div className="bg-white p-4 sm:p-6 rounded-3xl sm:rounded-[2.5rem] shadow-sm border border-slate-100 mb-8 space-y-4 w-full">
-          
-          {/* গ্লোবাল সার্চ ইনপুট */}
           <div className="relative w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -107,10 +113,7 @@ const Tuitions = () => {
             />
           </div>
           
-          {/* 🧩 রেসপন্সিভ ড্রপডাউন ইঞ্জিন (মোবাইলে ১ কলাম, ট্যাবে ৩ কলাম, ডেস্কটপে ৬ কলাম) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-black uppercase tracking-wider w-full">
-            
-            {/* ১. মিডিয়াম ফিল্টার */}
             <div className="flex flex-col gap-1 w-full min-w-0">
               <span className="text-[10px] text-slate-400 pl-1">Medium</span>
               <select 
@@ -126,7 +129,6 @@ const Tuitions = () => {
               </select>
             </div>
 
-            {/* ২. ক্লাস ফিল্টার */}
             <div className="flex flex-col gap-1 w-full min-w-0">
               <span className="text-[10px] text-slate-400 pl-1">Class Level</span>
               <select 
@@ -141,7 +143,6 @@ const Tuitions = () => {
               </select>
             </div>
 
-            {/* ৩. সাবজেক্ট ফিল্টার */}
             <div className="flex flex-col gap-1 w-full min-w-0">
               <span className="text-[10px] text-slate-400 pl-1">Subject</span>
               <select 
@@ -157,7 +158,6 @@ const Tuitions = () => {
               </select>
             </div>
 
-            {/* ৪. লোকেশন ফিল্টার */}
             <div className="flex flex-col gap-1 w-full min-w-0">
               <span className="text-[10px] text-slate-400 pl-1">Location</span>
               <select 
@@ -171,7 +171,6 @@ const Tuitions = () => {
               </select>
             </div>
 
-            {/* ৫. সর্ট কন্ট্রোলার */}
             <div className="flex flex-col gap-1 w-full min-w-0">
               <span className="text-[10px] text-slate-400 pl-1">Sort Flow</span>
               <select 
@@ -191,7 +190,6 @@ const Tuitions = () => {
               </select>
             </div>
 
-            {/* ৬. রিসেট বাটন (মোবাইলে ফুল উইথ নেবে) */}
             <div className="flex flex-col justify-end w-full">
               <button 
                 onClick={handleResetFilters}
@@ -200,15 +198,42 @@ const Tuitions = () => {
                 <RotateCcw size={14} /> Reset
               </button>
             </div>
-
           </div>
         </div>
 
-        {/* ⏳ লোডিং স্টেট */}
+        {/* 🛠️ রিকোয়ারমেন্ট ফিক্স: ৩ নম্বর সেকশনের কড়া নিয়মে "Skeleton loader while loading" হ্যান্ডলার */}
         {isLoading && (
-          <div className="min-h-[40vh] flex flex-col items-center justify-center gap-3 w-full">
-            <Loader2 className="animate-spin text-[#40bfff]" size={36} />
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest text-center">Scanning Live Tuition Board...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 w-full">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div 
+                key={n} 
+                className="bg-white p-5 sm:p-7 rounded-3xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between h-[380px] w-full animate-pulse"
+              >
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="h-5 bg-slate-200 rounded-full w-24" />
+                    <div className="h-5 bg-slate-200 rounded-md w-16" />
+                  </div>
+                  <div className="h-6 bg-slate-200 rounded-xl w-3/4 mb-4" />
+                  <div className="space-y-3 py-3 border-t border-b border-slate-100">
+                    <div className="h-4 bg-slate-200 rounded w-1/2" />
+                    <div className="h-4 bg-slate-200 rounded w-2/3" />
+                    <div className="h-4 bg-slate-200 rounded w-1/3" />
+                    <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-4 border-t border-slate-50">
+                  <div className="space-y-1">
+                    <div className="h-3 bg-slate-100 rounded w-10" />
+                    <div className="h-5 bg-slate-200 rounded w-20" />
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-10 w-10 bg-slate-200 rounded-xl" />
+                    <div className="h-10 w-10 bg-slate-200 rounded-xl" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -233,7 +258,6 @@ const Tuitions = () => {
                 className="group bg-white p-5 sm:p-7 rounded-3xl sm:rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between h-full relative overflow-hidden w-full min-w-0"
               >
                 <div>
-                  {/* Top Badge Meta Row */}
                   <div className="flex justify-between items-center gap-2 mb-4 w-full">
                     <span className="px-3 py-1 rounded-full bg-blue-50 text-[#40bfff] text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-blue-100/50 truncate max-w-[60%]">
                       {post.category || "General"}
@@ -243,12 +267,10 @@ const Tuitions = () => {
                     </span>
                   </div>
 
-                  {/* Title (লং টেক্সট প্রোটেকশন) */}
                   <h3 className="text-base sm:text-lg font-black text-slate-800 mb-4 group-hover:text-[#40bfff] transition-colors leading-snug min-h-[3rem] line-clamp-2 break-words">
                     {post.title}
                   </h3>
 
-                  {/* 📊 ইনফো বিবরণী (র‍্যাপ সেফটি লক) */}
                   <div className="space-y-2.5 mb-5 border-t border-b border-slate-50 py-3.5 w-full">
                     <div className="flex items-center gap-3 text-slate-500 font-bold text-xs sm:text-sm min-w-0">
                       <BookOpen size={15} className="text-[#40bfff]/80 shrink-0" />
@@ -272,7 +294,6 @@ const Tuitions = () => {
                   </div>
                 </div>
 
-                {/* Bottom Pricing, Bookmark & Action Row */}
                 <div className="mt-auto border-t border-slate-50 pt-4 w-full">
                   <div className="flex items-center justify-between gap-2 w-full">
                     <div className="flex flex-col min-w-0">
@@ -283,7 +304,6 @@ const Tuitions = () => {
                       </div>
                     </div>
                     
-                    {/* রাইট সাইড অ্যাকশন বাটন প্যানেল */}
                     <div className="flex items-center gap-2 shrink-0">
                       <button 
                         onClick={() => handleAddBookmark(post._id)}
@@ -300,10 +320,8 @@ const Tuitions = () => {
                         <ArrowRight size={15} />
                       </Link>
                     </div>
-
                   </div>
                 </div>
-
               </motion.div>
             )) : (
               <div className="col-span-full text-center py-16 sm:py-20 bg-white rounded-2xl sm:rounded-[3rem] border border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 p-4 w-full">
@@ -316,7 +334,7 @@ const Tuitions = () => {
           </div>
         )}
 
-        {/* 📄 রেসপন্সিভ তানস্ট্যাক পেজিনেশন বক্স */}
+        {/* 📄 પેજિનેશન */}
         {!isLoading && !isError && totalPages > 1 && (
           <div className="flex justify-center items-center gap-1.5 sm:gap-2 mt-12 w-full flex-wrap">
             <button 
@@ -353,7 +371,6 @@ const Tuitions = () => {
             </button>
           </div>
         )}
-
       </div>
     </div>
   );
