@@ -2,9 +2,9 @@ import axios from "axios";
 import { useEffect } from "react";
 import useAuth from "./useAuth";
 
-// https://etuitionbd-server-dusky.vercel.app
+
 const axiosSecure = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://etuitionbd-server-dusky.vercel.app",
 });
 
 const useAxios = () => {

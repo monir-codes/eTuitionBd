@@ -48,6 +48,7 @@ const Tuitions = () => {
           limit: itemsPerPage
         },
       });
+      console.log(res.data)
       
       if (Array.isArray(res.data)) {
         return { tuitions: res.data, totalCount: res.data.length };

@@ -18,7 +18,6 @@ import useAuth from "../../../hooks/useAuth";
 
 const ViewApplicants = () => {
   const { id } = useParams();
-  console.log("URL থেকে পাওয়া আইডি:", id);
   const { user } = useAuth();
   const axiosSecure = useAxios();
   const queryClient = useQueryClient();
@@ -27,7 +26,6 @@ const ViewApplicants = () => {
     queryKey: ["applicants", id],
     queryFn: async () => {
       const res = await axiosSecure.get(`/api/tuitions/applicants/${id}`);
-      console.log("Applicants Data Received:", res.data); // ডাটা কনসোলে দেখুন
       return res.data;
     },
   });

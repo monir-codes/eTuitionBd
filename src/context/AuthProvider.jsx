@@ -31,9 +31,9 @@ const AuthProvider = ({children}) => {
         displayName: name, photoURL: url
         }).then(()=>{
             // console.log('Profile successfully updated')
-        }).catch((err)=>{
-            console.log(err)
-        })
+        }).catch(
+            // console.log(err)
+        )
      };
 
      const googleSignIn = ()=>{
